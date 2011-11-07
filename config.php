@@ -2,9 +2,9 @@
 define('SITE_NAME', 'ゴキゲン分度器');
 define('SITE_URL', 'http://gokibun.com');
 
-define('CONSUMER_KEY', 'TiKHGmAIjYZpCphuEamJ1A');
-define('CONSUMER_SECRET', 'U3zARCmTyhF75gXdhtRGcUfgl1DPtUzYoQn79kK2E');
-define('OAUTH_CALLBACK', 'http://gokibun.com/callback.php');
+define('CONSUMER_KEY', '');
+define('CONSUMER_SECRET', '');
+define('OAUTH_CALLBACK', 'http://domain/callback.php');
 
 //define('DEBUG', 1);
 define('DEBUG', 0);
