@@ -1,11 +1,12 @@
 <?php
+define('SITE_NAME', 'ゴキゲン分度器');
+define('SITE_URL', 'http://gokibun.com');
 
-define('CONSUMER_KEY', 'pfIjaKyXLS3fErXsVi7ayw');
-define('CONSUMER_SECRET', 'bulusc1zR4UWcX1bFAg6YX7mQfpk6w7BnPYe51qBqsA');
-define('OAUTH_CALLBACK', 'http://bundoki.coz.jp/callback.php');
+define('CONSUMER_KEY', 'TiKHGmAIjYZpCphuEamJ1A');
+define('CONSUMER_SECRET', 'U3zARCmTyhF75gXdhtRGcUfgl1DPtUzYoQn79kK2E');
+define('OAUTH_CALLBACK', 'http://gokibun.com/callback.php');
 
 //define('DEBUG', 1);
 define('DEBUG', 0);
 
-define('POSITIVE_DICT', '/var/www/bundoki.coz.jp/data/positive.dic.6');
-define('NEGATIVE_DICT', '/var/www/bundoki.coz.jp/data/negative.dic.6');
+define('NAZKI_API_URL', 'http://210.152.149.14/api/GetSenseFull.php?key=ac95csaLKy');

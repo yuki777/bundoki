@@ -2,7 +2,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>hoge hoge.</title>
+    <title>ゴキゲン分度器</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <style type="text/css">
       img {border-width: 0}
@@ -50,9 +50,13 @@
   </head>
   <body>
     <div>
-      <h2>Welcome to hoge hoge.</h2>
+      <h2>ゴキゲン分度器</h2>
 
-      <p>This site is hoge hoge...</p>
+      <p>あなたのツイートからゴキゲン度合いを分析して表示します</p>
+      <p>(いま作ってるからもうちょっとまってくれヨ)</p>
+
+      <p><?php echo $message; ?></p>
+      <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
 
       <div id="percent_chart"></div>
       <div id="point_chart"></div>

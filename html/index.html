@@ -2,7 +2,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>hoge hoge.</title>
+    <title>ゴキゲン分度器</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <style type="text/css">
       img {border-width: 0}
@@ -32,7 +32,7 @@
 
         // count
         var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Count');
+        data.addColumn('string', 'Point');
         data.addColumn('number', 'Positive');
         data.addColumn('number', 'Negative');
         data.addColumn('number', 'Unknown');
@@ -41,8 +41,8 @@
         data.setValue(0, 1, <?php echo $point['total_positive'] ?>);
         data.setValue(0, 2, <?php echo $point['total_negative'] ?>);
         data.setValue(0, 3, <?php echo $point['total_unknown'] ?>);
-        var chart = new google.visualization.ColumnChart(document.getElementById('count_chart'));
-        chart.draw(data, {width: 450, height: 300, title: 'by count' });
+        var chart = new google.visualization.ColumnChart(document.getElementById('point_chart'));
+        chart.draw(data, {width: 450, height: 300, title: 'by point' });
       }
     </script>
     <!-- /google chart -->
@@ -50,12 +50,16 @@
   </head>
   <body>
     <div>
-      <h2>Welcome to hoge hoge.</h2>
+      <h2>ゴキゲン分度器</h2>
 
-      <p>This site is hoge hoge...</p>
+      <p>あなたのツイートからゴキゲン度合いを分析して表示します</p>
+      <p>(いま作ってるからもうちょっとまってくれヨ)</p>
+
+      <p><?php echo $message; ?></p>
+      <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
 
       <div id="percent_chart"></div>
-      <div id="count_chart"></div>
+      <div id="point_chart"></div>
 
       <hr />
     </div>
@@ -81,6 +85,7 @@
         echo "</li>";
     }
     ?>
+    <hr>(c) gokibun.com
 
   </body>
 </html>
