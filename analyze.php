@@ -1,15 +1,15 @@
 <?php
-session_start();
 require_once('configs/config.php');
 require_once('libs/lib.php');
 require_once('twitteroauth/twitteroauth.php');
 
-if (empty($_SESSION['access_token']) || empty($_SESSION['access_token']['oauth_token']) || empty($_SESSION['access_token']['oauth_token_secret'])) {
-    header('Location: ./clearsessions.php');
-}else{
+session_start();
+if(is_login()){
     $is_login    = true;
     $user_id     = $_SESSION['access_token']['user_id'];
     $screen_name = $_SESSION['access_token']['screen_name'];
+}else{
+    header('Location: ./clearsessions.php');
 }
 
 $access_token = $_SESSION['access_token'];

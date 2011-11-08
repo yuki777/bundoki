@@ -217,9 +217,9 @@ function is_account_error($account)
     if($account->error == 'Invalid application'
     || $account->error == 'Could not authenticate you.'
     || $account->error == 'Could not authenticate with OAuth.'){
-        l("! account error. redirect to connect.php");
+        l("! account error. redirect to index.php");
         l($account);
-        $url = SITE_URL . '/connect.php';
+        $url = SITE_URL . '/index.php';
         header('Location: ' . $url); 
         exit;
     }
@@ -230,4 +230,15 @@ function is_account_error($account)
     }
 
     return false;
+}
+
+function is_login()
+{
+    if (empty($_SESSION['access_token'])
+     || empty($_SESSION['access_token']['oauth_token'])
+     || empty($_SESSION['access_token']['oauth_token_secret'])) {
+        return false;
+    }
+
+    return true;
 }
