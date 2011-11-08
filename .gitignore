@@ -37,4 +37,4 @@ GTAGS
 tags
 
 # log
-logs/*
+logs/log
