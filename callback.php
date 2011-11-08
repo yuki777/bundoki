@@ -33,8 +33,7 @@ unset($_SESSION['oauth_token_secret']);
 if (200 == $connection->http_code) {
   /* The user has been verified and the access tokens can be saved for future use */
   $_SESSION['status'] = 'verified';
-  //header('Location: ./index.php');
-  header('Location: ./result.php');
+  header('Location: ./analyze.php');
 } else {
   /* Save HTTP status for error dialog on connnect page.*/
   header('Location: ./clearsessions.php');
