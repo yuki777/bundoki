@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -24,6 +25,44 @@
     <link rel="apple-touch-icon" href="images/tora57x57.jpg">
     <link rel="apple-touch-icon" sizes="72x72" href="images/tora72x72.jpg">
     <link rel="apple-touch-icon" sizes="114x114" href="images/tora114x114.jpg">
+
+    <!-- google chart -->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        // percent
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Type');
+        data.addColumn('number', 'Percent');
+        data.addRows(3);
+        data.setValue(0, 0, 'Positive');
+        data.setValue(0, 1, <?php echo $point['percent_positive']?>);
+        data.setValue(1, 0, 'Negative');
+        data.setValue(1, 1, <?php echo $point['percent_negative']?>);
+        data.setValue(2, 0, 'Unknown');
+        data.setValue(2, 1, <?php echo $point['percent_unknown']?>);
+        var chart = new google.visualization.PieChart(document.getElementById('percent_chart'));
+        chart.draw(data, {width: 450, height: 300, title: 'by percent'});
+
+        // count
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Point');
+        data.addColumn('number', 'Positive');
+        data.addColumn('number', 'Negative');
+        data.addColumn('number', 'Unknown');
+        data.addRows(1);
+        data.setValue(0, 0, '');
+        data.setValue(0, 1, <?php echo $point['total_positive'] ?>);
+        data.setValue(0, 2, <?php echo $point['total_negative'] ?>);
+        data.setValue(0, 3, <?php echo $point['total_unknown'] ?>);
+        var chart = new google.visualization.ColumnChart(document.getElementById('point_chart'));
+        chart.draw(data, {width: 450, height: 300, title: 'by point' });
+      }
+    </script>
+    <!-- /google chart -->
   </head>
 
   <body>
@@ -31,9 +70,9 @@
     <div class="topbar">
       <div class="fill">
         <div class="container">
-          <a class="brand" href="#">ゴキゲン分度器</a>
+          <a class="brand" href="/">ゴキゲン分度器</a>
           <ul class="nav">
-            <li class="active"><a href="#">Home</a></li>
+            <li class="active"><a href="/">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
@@ -45,9 +84,11 @@
 
       <!-- Main hero unit for a primary marketing message or call to action -->
       <div class="hero-unit">
-        <h1>ゴキゲンいかが？</h1>
-        <p>あなたのツイートからゴキゲン度合いを分析して表示します</p>
-        <p><a class="btn primary large" href="connect.php">早速やってみる &raquo;</a></p>
+      <p><?php echo $message; ?></p>
+      <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
+
+      <div id="percent_chart"></div>
+      <div id="point_chart"></div>
       </div>
 
       <!-- Example row of columns -->
@@ -68,6 +109,28 @@
           <p><a class="btn" href="#">View details &raquo;</a></p>
         </div>
       </div>
+
+    <?php
+    foreach($emotion_list as $emotion){
+        // text
+        $text = $emotion['text'];
+        $text = trim($text);
+        if(! $text) continue;
+
+        // font color
+        $color = "";
+        if($emotion['positive_or_negative'] == 'positive') $color = "green";
+        if($emotion['positive_or_negative'] == 'negative') $color = "red";
+
+        // print
+        echo "<li>";
+        echo "[".$emotion['positive_or_negative']."]";
+        echo '<font color="'.$color.'">';
+        echo $text;
+        echo "</font>";
+        echo "</li>";
+    }
+    ?>
 
       <footer>
         <p>&copy; Company 2011</p>

@@ -15,13 +15,23 @@ function get_cache($k){
     return unserialize(memcache_get(conn_cache(), $k));
 }
 
+function l($params = null){
+    $debug = debug_backtrace();
+    $file = $debug[0]['file'];
+    $line = $debug[0]['line'];
+    $function = $debug[1]['function'];
+    $date = date('Y-m-d H:i:s');
+    $body = var_export($params, true);
+    $body = "$date $file $function $line $body \n";
+    return error_log($body, 3, LOG_FILE);
+}
+
 function v($params = null){
     if(DEBUG){
         var_dump($params);
         echo "<br>\n";
     }
-    error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export($params,true)."\n", 3, '/var/www/gokibun.com/logs/log');
-    return;
+    return l($params);
 }
 
 function get_user($connection){
@@ -119,27 +129,27 @@ function analyze($contents, $status){
             $sense = $sense[0];
             if($sense){
                 if($sense == '好評'){
-                    error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export(" > sense : 好評, " . $text,true)."\n", 3, '/tmp/log');//XXX:DEBUG
+                    l(var_export(" > sense : 好評, " . $text,true));
                     $positive_count++;
                 }elseif($sense == '不評'){
-                    error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export(" > sense : 不評, " . $text,true)."\n", 3, '/tmp/log');//XXX:DEBUG
+                    l(var_export(" > sense : 不評, " . $text,true));
                     $negative_count++;
                 }else{
+                    l(var_export("!!! > sense : $sense, " . $text,true));
                     $unknown_count++;
-                    error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export("!!! > sense : $sense, " . $text,true)."\n", 3, '/tmp/log');//XXX:DEBUG
                 }
             }
             // 感性なし
             else{
                 $unknown_count++;
-                error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export(" > sense : NO, " . $text,true)."\n", 3, '/tmp/log');//XXX:DEBUG
+                l(var_export(" > sense : NO, " . $text,true));
             }
 
         }
     }
     // 感情なし
     else{
-        error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export("emotion : NO, " . $status,true)."\n", 3, '/tmp/log');//XXX:DEBUG
+        l(var_export("emotion : NO, " . $status,true));
     }
 
     // ポジかネガか判定
@@ -193,4 +203,33 @@ function get_message($account, $list){
     if($message) $message.= '検知しました ' . $site_url;;
 
     return $message;
+}
+
+function is_account_error($account)
+{
+    if(isset($account->error) === false){
+        return false;
+    }
+
+    if(! $account){
+        l($account);
+        return true;
+    }
+
+    if($account->error == 'Invalid application'
+    || $account->error == 'Could not authenticate you.'
+    || $account->error == 'Could not authenticate with OAuth.'){
+        l("! account error. redirect to connect.php");
+        l($account);
+        $url = SITE_URL . '/connect.php';
+        header('Location: ' . $url); 
+        exit;
+    }
+
+    if($account->error){
+        l($account);
+        return true;
+    }
+
+    return false;
 }

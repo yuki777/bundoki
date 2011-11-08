@@ -27,4 +27,14 @@
 ### !zlib/*.o
 
 # twitter api keyが含まれているので無視
+configs/twitter.php
 /configs/twitter.php
+
+# ctags, gtags
+GPATH
+GRTAGS
+GTAGS
+tags
+
+# log
+logs/*
