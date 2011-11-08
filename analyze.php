@@ -22,5 +22,5 @@ $emotion_list = get_emotion_list($status_list);
 $point        = get_emotion_point($emotion_list);
 $message      = get_message($account, $point);
 
-include('html/result.html');
+include('html/analyze.html');
 
