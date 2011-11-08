@@ -6,13 +6,11 @@ function conn_cache(){
 
 function set_cache($k, $v){
     $expire = 600;         // 通常      ：600秒キャッシュ保存
-    if(DEBUG) $expire = 3; // デバッグ中：  3秒キャッシュ保存
-    return memcache_set(conn_cache(), $k, serialize($v), 0, $expire);
+    return memcache_set(conn_cache(), ENV . $k, serialize($v), 0, $expire);
 }
 
 function get_cache($k){
-    if(DEBUG) return; // デバッグ中はキャッシュヒットさせない
-    return unserialize(memcache_get(conn_cache(), $k));
+    return unserialize(memcache_get(conn_cache(), ENV . $k));
 }
 
 function l($params = null){

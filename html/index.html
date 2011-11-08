@@ -36,7 +36,11 @@
             <li class="active"><a href="#">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
-          </ul>
+            <?php
+                if($is_login){
+                    echo '<li><a href="logout.php">logout</a></li>';
+                }
+            ?>
         </div>
       </div>
     </div>
@@ -46,8 +50,15 @@
       <!-- Main hero unit for a primary marketing message or call to action -->
       <div class="hero-unit">
         <h1>ゴキゲンいかが？</h1>
-        <p>あなたのツイートからゴキゲン度合いを分析して表示します</p>
-        <p><a class="btn primary large" href="connect.php">早速やってみる &raquo;</a></p>
+        <?php
+            if($is_login){
+                echo '<p>' . $screen_name . 'さんのツイートからゴキゲン度合いを分析して表示します</p>';
+                echo '<p><a class="btn primary large" href="result.php">早速やってみる &raquo;</a></p>';
+            }else{
+                echo '<p>あなたのツイートからゴキゲン度合いを分析して表示します</p>';
+                echo '<p><a href="./redirect.php"><img src="./images/lighter.png" alt="Sign in with Twitter"/></a></p>';
+            }
+        ?>
       </div>
 
       <!-- Example row of columns -->

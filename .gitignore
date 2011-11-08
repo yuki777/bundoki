@@ -26,9 +26,9 @@
 ### *.o
 ### !zlib/*.o
 
-# twitter api keyが含まれているので無視
+# keyが含まれているので無視
 configs/twitter.php
-/configs/twitter.php
+configs/nazki.php
 
 # ctags, gtags
 GPATH

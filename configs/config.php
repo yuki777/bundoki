@@ -1,14 +1,20 @@
 <?php
-define('SITE_NAME', 'ゴキゲン分度器');
-define('SITE_URL', 'http://gokibun.com');
+if($_SERVER['HTTP_HOST'] == 'dev.gokibun.com'){
+    require_once('configs/dev.php');
+}elseif($_SERVER['HTTP_HOST'] == 'gokibun.com'){
+    require_once('configs/live.php');
+}else{
+    die('unkown ENV');
+}
 
-//define('DEBUG', 1);
-define('DEBUG', 0);
+// アプリケーションログファイル
 define('LOG_FILE', 'logs/log');
 
-define('NAZKI_API_URL', 'http://210.152.149.14/api/GetSenseFull.php?key=ac95csaLKy');
+// 感情解析API
+require_once('configs/nazki.php');
+//define('NAZKI_API_URL', 'http://210.152.149.14/api/GetSenseFull.php?key=REPLACE_ME');
 
+// twitter
 require_once('configs/twitter.php');
-//define('CONSUMER_KEY', 'TiKHGmAIjYZpCphuEamJ1A');
-//define('CONSUMER_SECRET', 'U3zARCmTyhF75gXdhtRGcUfgl1DPtUzYoQn79kK2E');
-//define('OAUTH_CALLBACK', 'http://gokibun.com/callback.php');
+//define('CONSUMER_KEY', 'REPLACE_ME');
+//define('CONSUMER_SECRET', 'REPLACE_ME');
