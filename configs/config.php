@@ -3,6 +3,8 @@ if($_SERVER['HTTP_HOST'] == 'dev.gokibun.com'){
     require_once('configs/dev.php');
 }elseif($_SERVER['HTTP_HOST'] == 'gokibun.com'){
     require_once('configs/live.php');
+}elseif($_SERVER['HTTP_HOST'] == 'gokibun.nyarico.com'){
+    require_once('configs/nyarico.php');
 }else{
     die('unkown ENV');
 }

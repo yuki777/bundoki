@@ -1,6 +1,13 @@
+php_value display_errors 1
+php_value error_reporting 30711
+php_value log_errors 1
+php_value ignore_repeated_errors 1
+php_value html_errors 1
+php_value track_errors 1
+php_value date.timezone Asia/Tokyo
+#DirectoryIndex index.html index.php
+#ErrorDocument 404 /errors/404.html
 RewriteEngine On
-#RewriteRule ^pods/?$            /pods.html          [L]
-#RewriteRule ^pod/?$             /pod.html           [L]
-#RewriteRule ^pod/(.+)/?$        /pod.html?id=$1     [L]
 RewriteRule ^analyze/?$             /analyze.php        [L]
 RewriteRule ^proxy/mode/([^/]+)/?$     /proxy.php?mode=$1  [L]
+
