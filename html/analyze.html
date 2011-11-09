@@ -124,7 +124,7 @@
             });
             function set_status_list(){
                 var xhr = new XMLHttpRequest();
-                var url = 'http://dev.gokibun.com/proxy/mode/get_user_status_list/';
+                var url = '/proxy/mode/get_user_status_list/';
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === 4 && xhr.status == 200) {
@@ -139,7 +139,7 @@
             }
             function set_emotion_point(){
                 var xhr = new XMLHttpRequest();
-                var url = 'http://dev.gokibun.com/proxy/mode/get_emotion_point/';
+                var url = '/proxy/mode/get_emotion_point/';
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === 4 && xhr.status == 200) {
@@ -155,7 +155,7 @@
             }
             function set_message(){
                 var xhr = new XMLHttpRequest();
-                var url = 'http://dev.gokibun.com/proxy/mode/get_message/';
+                var url = '/proxy/mode/get_message/';
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === 4 && xhr.status == 200) {
@@ -168,7 +168,7 @@
             }
             function set_tweet_link(){
                 var xhr = new XMLHttpRequest();
-                var url = 'http://dev.gokibun.com/proxy/mode/get_tweet_link/';
+                var url = '/proxy/mode/get_tweet_link/';
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === 4 && xhr.status == 200) {
