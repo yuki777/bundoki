@@ -15,6 +15,6 @@ if($_POST['screen_name']){
 
 if($_GET['screen_name']){
     $screen_name = $_GET['screen_name'];
-    include('html/analyze.html');
+    output('html/analyze.html');
 }
 

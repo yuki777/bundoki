@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>ゴキゲン分度器</title>
+        <meta name="description" content="あなたのツイートからゴキゲン度合いを分析して表示します">
+        <meta name="author" content="<?php echo SITE_AUTHOR; ?>">
+
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <!-- Le styles -->
+        <link href="/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                padding-top: 60px;
+            }
+        </style>
+
+        <!-- Le fav and touch icons -->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/tora57x57.jpg">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/tora72x72.jpg">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/tora114x114.jpg">
+
+        <!-- jquery -->
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+
+        <!-- loading animation jquery plugin -->
+        <!-- http://neteye.github.com/activity-indicator.html -->
+        <script src="/js/loading/jquery.activity-indicator-1.0.0.js" /></script>
+        <style type="text/css">
+        .loading {
+            width: 200;
+            height: 200;
+            float: left;
+            margin: 10px;
+            padding: 10px 10px;
+            color: #000;
+            background: whiteSmoke;
+            font-family: Helvetica, Arial, Sans-Serif;
+        }
+        </style>
+        <!-- loading animation jquery plugin -->
+    </head>
+
+    <body>
+        <div class="topbar">
+            <div class="fill">
+                <div class="container">
+                    <a class="brand" href="/">ゴキゲン分度器</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <!-- Main hero unit for a primary marketing message or call to action -->
+            <div class="hero-unit">
+                <h1>ゴキゲンいかが？</h1>
+
+                <p></p>
+
+                <!-- ローディングアニメーション -->
+                <div id="busy" class="loading"></div>
+
+                <!-- 結果メッセージ -->
+                <div id="message"></div>
+
+                <!-- tweetしよう -->
+                <div id="lets_tweet"></div>
+
+            </div>
+
+            <footer><p>&copy; <?php echo SITE_URL;?> 2011</p></footer>
+
+        </div> <!-- /container -->
+
+        <?php include('html/google_analytics.html'); ?>
+
+        <script>
+            $(document).ready(function () {
+                sessionStorage.clear();
+                // ローディングアニメーションstart
+                $('#busy').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
+                // 描画に必要なデータを取得(callbackでDBにセット)
+                get_data();
+            });
+
+            function update_html(){
+                var json = JSON.parse(sessionStorage.getItem('json'));
+                // status_list
+                for(var i in json.status_list) {
+                    $("#status_list ul").append('<li>' + json.status_list[i] + '</li>');
+                }
+                // emotion_point
+                $("#emotion_point ul").append('<li>total_emotion  : ' + json.point.total_emotion  + '</li>');
+                $("#emotion_point ul").append('<li>total_positive : ' + json.point.total_positive + '</li>');
+                $("#emotion_point ul").append('<li>total_negative : ' + json.point.total_negative + '</li>');
+                $("#emotion_point ul").append('<li>total_unknown  : ' + json.point.total_unknown  + '</li>');
+                $("#emotion_point ul").append('<li>total_text     : ' + json.point.total_text     + '</li>');
+                // message
+                $('#message').html('<p>' + json.message + '</p>');
+                // tweet_link
+                $('#lets_tweet').html('<p><a target="_brank" href="' + json.link + '">結果をTwitterでつぶやこう</a></p>');
+            }
+
+            function get_data(){
+                var xhr = new XMLHttpRequest();
+                xhr.addEventListener("load", function(e) {
+                    update_html();
+                    setTimeout( function() {
+                        $('#busy').activity(false);
+                    }, 1000);
+                }, false);
+                var url = '/proxy/mode/get_data/screen_name/' + "<?php echo $screen_name; ?>" + '/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        sessionStorage.setItem('json',         JSON.stringify(json));
+                        sessionStorage.setItem('timeline',     JSON.stringify(json.timeline));
+                        sessionStorage.setItem('status_list',  JSON.stringify(json.status_list));
+                        sessionStorage.setItem('emotion_list', JSON.stringify(json.emotion_list));
+                        sessionStorage.setItem('point',        JSON.stringify(json.point));
+                        sessionStorage.setItem('message',      JSON.stringify(json.message));
+                    }
+                };
+                xhr.send(null);
+            }
+        </script>
+    </body>
+</html>

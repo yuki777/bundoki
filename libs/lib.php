@@ -270,6 +270,37 @@ function make_user_timeline_unofficial($status_list){
     foreach($status_list as $status){
         $timeline[] = $status->text;
     }
-
     return $timeline;
+}
+
+function output($file){
+
+    // そろそろフレームワーク使うべし。
+    global $screen_name;
+
+    if(is_smartphone()){
+        $pathinfo = pathinfo($file);
+        $smartphone_file = $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.sp.' . $pathinfo['extension'];
+        if(is_readable($smartphone_file)){
+            $file = $smartphone_file;
+        }
+    }
+    include($file);
+}
+
+function is_smartphone(){
+    $ua_list = array('iPhone', 'iPod', 'Android', 'dream', 'CUPCAKE', 'blackberry', 'webOS', 'incognito', 'webmate');
+    foreach($ua_list as $ua){
+        $pattern = '/' . $ua . '/i';
+        if(preg_match($pattern, $_SERVER['HTTP_USER_AGENT'])){
+            if(preg_match('/Android/i', $_SERVER['HTTP_USER_AGENT'])){
+                if(preg_match('/Mobile/i', $_SERVER['HTTP_USER_AGENT'])){
+                    return true;
+                }
+            }else{
+                return true;
+            }
+        }
+    }
+    return false;
 }
