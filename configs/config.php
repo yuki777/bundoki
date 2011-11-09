@@ -9,10 +9,8 @@ if($_SERVER['HTTP_HOST'] == 'dev.gokibun.com'){
     die('unkown ENV');
 }
 
-// アプリケーションログファイル
 define('LOG_FILE', 'logs/log');
 
-// 感情解析API
 require_once('configs/nazki.php');
 //define('NAZKI_API_URL', 'http://210.152.149.14/api/GetSenseFull.php?key=REPLACE_ME');
 
