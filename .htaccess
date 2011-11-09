@@ -1,0 +1,6 @@
+RewriteEngine On
+#RewriteRule ^pods/?$            /pods.html          [L]
+#RewriteRule ^pod/?$             /pod.html           [L]
+#RewriteRule ^pod/(.+)/?$        /pod.html?id=$1     [L]
+RewriteRule ^analyze/?$             /analyze.php        [L]
+RewriteRule ^proxy/mode/([^/]+)/?$     /proxy.php?mode=$1  [L]
