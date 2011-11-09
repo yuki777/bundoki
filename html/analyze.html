@@ -12,7 +12,7 @@
         <![endif]-->
 
         <!-- Le styles -->
-        <link href="css/bootstrap.css" rel="stylesheet">
+        <link href="/css/bootstrap.css" rel="stylesheet">
         <style type="text/css">
             body {
                 padding-top: 60px;
@@ -30,7 +30,7 @@
 
         <!-- loading animation jquery plugin -->
         <!-- http://neteye.github.com/activity-indicator.html -->
-        <script src="js/loading/jquery.activity-indicator-1.0.0.js" /></script>
+        <script src="/js/loading/jquery.activity-indicator-1.0.0.js" /></script>
         <style type="text/css">
         .loading {
             width: 200;
@@ -44,12 +44,9 @@
         }
         </style>
         <!-- loading animation jquery plugin -->
-
-
     </head>
 
     <body>
-
         <div class="topbar">
             <div class="fill">
                 <div class="container">
@@ -58,7 +55,6 @@
                         <li class="active"><a href="/">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#contact">Contact</a></li>
-                        <?php if($is_login) echo '<li><a href="clearsessions.php">logout</a></li>'; ?>
                     </ul>
                 </div>
             </div>
@@ -79,9 +75,7 @@
                 <div id="message"></div>
 
                 <!-- tweetしよう -->
-                <div id="lets_tweet">
-                    <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
-                </div>
+                <div id="lets_tweet"></div>
 
             </div>
 
@@ -109,78 +103,54 @@
 
         <script>
             $(document).ready(function () {
-                // tweetメッセージがまだ取得出来ていないので隠しておく
-                $('#lets_tweet').css('display', 'none');
-                // ローディングアニメーション
+                sessionStorage.clear();
+                // ローディングアニメーションstart
                 $('#busy').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
-                // ユーザツイートリストを取得＋セット
-                set_status_list();
-                // 感情解析結果を取得＋セット
-                set_emotion_point();
-                // 結果メッセージを取得＋セット
-                set_message();
-                // tweetメッセージを取得＋セット
-                set_tweet_link();
+                // 描画に必要なデータを取得(callbackでDBにセット)
+                get_data();
             });
-            function set_status_list(){
-                var xhr = new XMLHttpRequest();
-                var url = '/proxy/mode/get_user_status_list/';
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === 4 && xhr.status == 200) {
-                        var json = $.parseJSON(xhr.responseText);
-                        for(var i in json) {
-                            var li = '<li>' + json[i] + '</li>';
-                            $("#status_list ul").append(li);
-                        }
-                    }
-                };
-                xhr.send(null);
+
+            function update_html(){
+                var json = JSON.parse(sessionStorage.getItem('json'));
+                // status_list
+                for(var i in json.status_list) {
+                    $("#status_list ul").append('<li>' + json.status_list[i] + '</li>');
+                }
+                // emotion_point
+                $("#emotion_point ul").append('<li>total_emotion  : ' + json.point.total_emotion  + '</li>');
+                $("#emotion_point ul").append('<li>total_positive : ' + json.point.total_positive + '</li>');
+                $("#emotion_point ul").append('<li>total_negative : ' + json.point.total_negative + '</li>');
+                $("#emotion_point ul").append('<li>total_unknown  : ' + json.point.total_unknown  + '</li>');
+                $("#emotion_point ul").append('<li>total_text     : ' + json.point.total_text     + '</li>');
+                // message
+                $('#message').html('<p>' + json.message + '</p>');
+                // tweet_link
+                $('#lets_tweet').html('<p><a target="_brank" href="' + json.link + '">結果をTwitterでつぶやこう</a></p>');
             }
-            function set_emotion_point(){
+
+            function get_data(){
                 var xhr = new XMLHttpRequest();
-                var url = '/proxy/mode/get_emotion_point/';
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === 4 && xhr.status == 200) {
-                        var json = $.parseJSON(xhr.responseText);
-                        $("#emotion_point ul").append('<li>total_emotion : ' + json.total_emotion + '</li>');
-                        $("#emotion_point ul").append('<li>total_positive : ' + json.total_positive + '</li>');
-                        $("#emotion_point ul").append('<li>total_negative : ' + json.total_negative + '</li>');
-                        $("#emotion_point ul").append('<li>total_unknown : ' + json.total_unknown + '</li>');
-                        $("#emotion_point ul").append('<li>total_text : ' + json.total_text + '</li>');
-                    }
-                };
-                xhr.send(null);
-            }
-            function set_message(){
-                var xhr = new XMLHttpRequest();
-                var url = '/proxy/mode/get_message/';
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === 4 && xhr.status == 200) {
-                        var json = $.parseJSON(xhr.responseText);
-                        //$("#message ul").append('<li>' + json + '</li>');
-                        $('#message').html('<p>' + json + '</p>');
-                    }
-                };
-                xhr.send(null);
-            }
-            function set_tweet_link(){
-                var xhr = new XMLHttpRequest();
-                var url = '/proxy/mode/get_tweet_link/';
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === 4 && xhr.status == 200) {
-                        var json = $.parseJSON(xhr.responseText);
-                        $('#lets_tweet a').attr('href' , json);
-                        $('#lets_tweet').css('display', 'block');
+                xhr.addEventListener("load", function(e) {
+                    update_html();
+                    setTimeout( function() {
                         $('#busy').activity(false);
+                    }, 1000);
+                }, false);
+                var url = '/proxy/mode/get_data/screen_name/' + "<?php echo $screen_name; ?>" + '/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        sessionStorage.setItem('json',         JSON.stringify(json));
+                        sessionStorage.setItem('timeline',     JSON.stringify(json.timeline));
+                        sessionStorage.setItem('status_list',  JSON.stringify(json.status_list));
+                        sessionStorage.setItem('emotion_list', JSON.stringify(json.emotion_list));
+                        sessionStorage.setItem('point',        JSON.stringify(json.point));
+                        sessionStorage.setItem('message',      JSON.stringify(json.message));
                     }
                 };
                 xhr.send(null);
             }
         </script>
-
     </body>
 </html>

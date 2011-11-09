@@ -5,7 +5,7 @@ function conn_cache(){
 }
 
 function set_cache($k, $v){
-    $expire = 600;         // 通常      ：600秒キャッシュ保存
+    $expire = 3600;
     return memcache_set(conn_cache(), ENV . $k, serialize($v), 0, $expire);
 }
 
@@ -108,6 +108,7 @@ function get_emotion($status){
 
     $cache = get_cache('status.' . md5($status));
     if($cache){
+        //l("cache hit. get_emotion() return cache.");
         return $cache;
     }
 
@@ -115,6 +116,7 @@ function get_emotion($status){
     $contents = file_get_contents($url);
     $emotion = analyze_nazki($contents, $status);
 
+    l("cache NOT hit. get_emotion() connect NAZKI API.");
     set_cache('status.' . md5($status), $emotion);
     return $emotion;
 }
@@ -165,7 +167,7 @@ function analyze_nazki($contents, $status){
     $list['unknown_count'] = $unknown_count;
     $list['text'] = $status;
 
-    l($list);
+    //l($list);
     return $list;
 }
 
@@ -183,9 +185,6 @@ function get_emotion_point($emotion_list){
     $list['total_unknown'] = $total_unknown;
     $total_emotion = $total_positive + $total_negative + $total_unknown;
     $list['total_emotion'] = $total_emotion;
-    $list['percent_positive'] = round(($total_positive / $total_emotion) * 100);
-    $list['percent_negative'] = round(($total_negative / $total_emotion) * 100);
-    $list['percent_unknown'] = round(($total_unknown  / $total_emotion) * 100);
 
     return $list;
 }
@@ -204,31 +203,13 @@ function check_positive_or_negative($p, $n)
 
     return 'unknown';
 }
-function get_message($account, $list){
-    $screen_name = $account->screen_name;
+function get_message($screen_name, $list){
     $footer   = HASH_TAG . ' ' . SITE_URL;
-    if($list['percent_unknown'] == 100){
-        return $screen_name . "さんの、ゴキゲンもフキゲンも検知できませんでした " . $footer;
-    }
-    if($list['percent_positive'] == 100){
-        return $screen_name . "さんの、ゴキゲン100%を検知しました " . $footer;
-    }
-    if($list['percent_negative'] == 100){
-        return $screen_name . "さんの、フキゲン100%を検知しました " . $footer;
-    }
-
-    $message = $screen_name . 'さんの、';
-    if($list['percent_positive'] > 0){
-        $message .= 'ゴキゲンを'.$list['percent_positive'].'% ';
-    }
-    if($list['percent_negative'] > 0){
-        $message .= 'フキゲンを'.$list['percent_negative'].'% ';
-    }
-    if($list['percent_unknown'] > 0){
-        $message .= 'よく分からないものを'.$list['percent_negative'].'% ';
-    }
-    if($message) $message.= '検知しました ' . $footer;;
-
+    $message  = SITE_NAME . 'が @' . $screen_name . ' さんの、';
+    $message .= 'ゴキゲンを' . $list['total_positive'] . '°、';
+    $message .= 'フキゲンを' . $list['total_negative'] . '°、';
+    $message .= 'よくわからないものを' . $list['total_unknown'] . '°、';
+    $message .= '検知しました。' . $footer;
     return $message;
 }
 

@@ -8,6 +8,6 @@ php_value date.timezone Asia/Tokyo
 #DirectoryIndex index.html index.php
 #ErrorDocument 404 /errors/404.html
 RewriteEngine On
-RewriteRule ^analyze/?$             /analyze.php        [L]
-RewriteRule ^proxy/mode/([^/]+)/?$     /proxy.php?mode=$1  [L]
+RewriteRule ^analyze/([0-9a-zA-Z_-]+)/$             /analyze.php?screen_name=$1        [L]
+RewriteRule ^proxy/mode/([^/]+)/screen_name/([^/]+)/?$     /proxy.php?mode=$1&screen_name=$2  [L]
 

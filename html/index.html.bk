@@ -50,14 +50,15 @@
                 <!-- Main hero unit for a primary marketing message or call to action -->
                 <div class="hero-unit">
                     <h1>ゴキゲンいかが？</h1>
-                    <p>ツイートからゴキゲン度合いを分析して表示します</p>
-                    <div class="clearfix">
-                        <label for="xlInput">Twitterアカウント : </label>
-                        <form action="analyze.php" method="POST">
-                            <input class="xlarge" id="xlInput" name="screen_name" size="30" type="text" autofocus />
-                            <input type="submit" class="btn primary" value="早速ためしてみる">
-                        </form>
-                    </div><!-- /clearfix -->
+                    <?php
+                    if($is_login){
+                    echo '<p>' . $screen_name . 'さんのツイートからゴキゲン度合いを分析して表示します</p>';
+                    echo '<p><a class="btn primary large" href="analyze.php">早速やってみる &raquo;</a></p>';
+                    }else{
+                    echo '<p>あなたのツイートからゴキゲン度合いを分析して表示します</p>';
+                    echo '<p><a href="./redirect.php"><img src="./images/lighter.png" alt="Sign in with Twitter"/></a></p>';
+                    }
+                    ?>
                 </div>
 
                 <!-- Example row of columns -->
