@@ -18,3 +18,4 @@ require_once('configs/nazki.php');
 require_once('configs/twitter.php');
 //define('CONSUMER_KEY', 'REPLACE_ME');
 //define('CONSUMER_SECRET', 'REPLACE_ME');
+define('HASH_TAG', '#gokibun');

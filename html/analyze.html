@@ -25,43 +25,27 @@
         <link rel="apple-touch-icon" sizes="72x72" href="images/tora72x72.jpg">
         <link rel="apple-touch-icon" sizes="114x114" href="images/tora114x114.jpg">
 
-        <!-- google chart -->
-        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-        <script type="text/javascript">
-            google.load("visualization", "1", {packages:["corechart"]});
-            google.setOnLoadCallback(drawChart);
-            function drawChart() {
+        <!-- jquery -->
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
-                // percent
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Type');
-                data.addColumn('number', 'Percent');
-                data.addRows(3);
-                data.setValue(0, 0, 'Positive');
-                data.setValue(0, 1, <?php echo $point['percent_positive']?>);
-                data.setValue(1, 0, 'Negative');
-                data.setValue(1, 1, <?php echo $point['percent_negative']?>);
-                data.setValue(2, 0, 'Unknown');
-                data.setValue(2, 1, <?php echo $point['percent_unknown']?>);
-                var chart = new google.visualization.PieChart(document.getElementById('percent_chart'));
-                chart.draw(data, {width: 450, height: 300, title: 'by percent'});
+        <!-- loading animation jquery plugin -->
+        <!-- http://neteye.github.com/activity-indicator.html -->
+        <script src="js/loading/jquery.activity-indicator-1.0.0.js" /></script>
+        <style type="text/css">
+        .loading {
+            width: 200;
+            height: 200;
+            float: left;
+            margin: 10px;
+            padding: 10px 10px;
+            color: #000;
+            background: whiteSmoke;
+            font-family: Helvetica, Arial, Sans-Serif;
+        }
+        </style>
+        <!-- loading animation jquery plugin -->
 
-                // count
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Point');
-                data.addColumn('number', 'Positive');
-                data.addColumn('number', 'Negative');
-                data.addColumn('number', 'Unknown');
-                data.addRows(1);
-                data.setValue(0, 0, '');
-                data.setValue(0, 1, <?php echo $point['total_positive'] ?>);
-                data.setValue(0, 2, <?php echo $point['total_negative'] ?>);
-                data.setValue(0, 3, <?php echo $point['total_unknown'] ?>);
-                var chart = new google.visualization.ColumnChart(document.getElementById('point_chart'));
-                chart.draw(data, {width: 450, height: 300, title: 'by point' });
-            }
-        </script>
-        <!-- /google chart -->
+
     </head>
 
     <body>
@@ -74,11 +58,7 @@
                         <li class="active"><a href="/">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#contact">Contact</a></li>
-                        <?php
-                        if($is_login){
-                        echo '<li><a href="clearsessions.php">logout</a></li>';
-                        }
-                        ?>
+                        <?php if($is_login) echo '<li><a href="clearsessions.php">logout</a></li>'; ?>
                     </ul>
                 </div>
             </div>
@@ -89,37 +69,36 @@
             <!-- Main hero unit for a primary marketing message or call to action -->
             <div class="hero-unit">
                 <h1>ゴキゲンいかが？</h1>
-                <p><?php echo $message; ?></p>
-                <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
 
-                <div id="percent_chart"></div>
-                <div id="point_chart"></div>
+                <p></p>
+
+                <!-- ローディングアニメーション -->
+                <div id="busy" class="loading"></div>
+
+                <!-- 結果メッセージ -->
+                <div id="message"></div>
+
+                <!-- tweetしよう -->
+                <div id="lets_tweet">
+                    <p><a target="_brank" href="https://twitter.com/intent/tweet?text=+<?php echo urlencode($message); ?>++">結果をTwitterでつぶやこう</a></p>
+                </div>
+
             </div>
 
+            <!-- ユーザツイートリスト -->
             <div class="alert-message block-message warning">
-                <?php
-                foreach($emotion_list as $emotion){
-                // text
-                $text = $emotion['text'];
-                $text = trim($text);
-                if(! $text) continue;
+                <div id="status_list">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
 
-                // font color
-                $label = '<span class="label">Unknown</span>';
-                if($emotion['positive_or_negative'] == 'positive'){
-                    $label = '<span class="label success">Positive</span>';
-                }elseif($emotion['positive_or_negative'] == 'negative'){
-                    $label = '<span class="label important">Negative</span>';
-                }
-
-                // print
-                $buf = "<li>";
-                $buf.= $label . "\t";
-                $buf.= $text;
-                $buf.= "</li>";
-                echo $buf;
-                }
-                ?>
+            <!-- 感情解析結果 --> 
+            <div class="alert-message block-message warning">
+                <div id="emotion_point">
+                    <ul>
+                    </ul>
+                </div>
             </div>
 
             <footer><p>&copy; <?php echo SITE_URL;?> 2011</p></footer>
@@ -127,6 +106,81 @@
         </div> <!-- /container -->
 
         <?php include('html/google_analytics.html'); ?>
+
+        <script>
+            $(document).ready(function () {
+                // tweetメッセージがまだ取得出来ていないので隠しておく
+                $('#lets_tweet').css('display', 'none');
+                // ローディングアニメーション
+                $('#busy').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
+                // ユーザツイートリストを取得＋セット
+                set_status_list();
+                // 感情解析結果を取得＋セット
+                set_emotion_point();
+                // 結果メッセージを取得＋セット
+                set_message();
+                // tweetメッセージを取得＋セット
+                set_tweet_link();
+            });
+            function set_status_list(){
+                var xhr = new XMLHttpRequest();
+                var url = 'http://dev.gokibun.com/proxy/mode/get_user_status_list/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        for(var i in json) {
+                            var li = '<li>' + json[i] + '</li>';
+                            $("#status_list ul").append(li);
+                        }
+                    }
+                };
+                xhr.send(null);
+            }
+            function set_emotion_point(){
+                var xhr = new XMLHttpRequest();
+                var url = 'http://dev.gokibun.com/proxy/mode/get_emotion_point/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        $("#emotion_point ul").append('<li>total_emotion : ' + json.total_emotion + '</li>');
+                        $("#emotion_point ul").append('<li>total_positive : ' + json.total_positive + '</li>');
+                        $("#emotion_point ul").append('<li>total_negative : ' + json.total_negative + '</li>');
+                        $("#emotion_point ul").append('<li>total_unknown : ' + json.total_unknown + '</li>');
+                        $("#emotion_point ul").append('<li>total_text : ' + json.total_text + '</li>');
+                    }
+                };
+                xhr.send(null);
+            }
+            function set_message(){
+                var xhr = new XMLHttpRequest();
+                var url = 'http://dev.gokibun.com/proxy/mode/get_message/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        //$("#message ul").append('<li>' + json + '</li>');
+                        $('#message').html('<p>' + json + '</p>');
+                    }
+                };
+                xhr.send(null);
+            }
+            function set_tweet_link(){
+                var xhr = new XMLHttpRequest();
+                var url = 'http://dev.gokibun.com/proxy/mode/get_tweet_link/';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4 && xhr.status == 200) {
+                        var json = $.parseJSON(xhr.responseText);
+                        $('#lets_tweet a').attr('href' , json);
+                        $('#lets_tweet').css('display', 'block');
+                        $('#busy').activity(false);
+                    }
+                };
+                xhr.send(null);
+            }
+        </script>
 
     </body>
 </html>

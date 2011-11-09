@@ -40,10 +40,12 @@ function get_user($connection){
 function get_user_timeline($connection, $account){
     $cache = get_cache('screen.' . $account->screen_name);
     if($cache){
+        l('cache hit. get_user_timeline() return cache.');
         return $cache;
     }
     $content = $connection->get('statuses/user_timeline', array('screen_name' => $account->screen_name));
     if($content){
+        l('cache NOT hit. get_user_timeline() connect twitter API.');
         set_cache('screen.' . $account->screen_name, $content);
     }
     return $content;
@@ -176,17 +178,16 @@ function check_positive_or_negative($p, $n)
 }
 function get_message($account, $list){
     $screen_name = $account->screen_name;
-    $site_url = SITE_URL;
+    $footer   = HASH_TAG . ' ' . SITE_URL;
     if($list['percent_unknown'] == 100){
-        return $screen_name . "さんの、ゴキゲンもフキゲンも検知できませんでした " . $site_url;
+        return $screen_name . "さんの、ゴキゲンもフキゲンも検知できませんでした " . $footer;
     }
     if($list['percent_positive'] == 100){
-        return $screen_name . "さんの、ゴキゲン100%を検知しました " . $site_url;
+        return $screen_name . "さんの、ゴキゲン100%を検知しました " . $footer;
     }
     if($list['percent_negative'] == 100){
-        return $screen_name . "さんの、フキゲン100%を検知しました " . $site_url;
+        return $screen_name . "さんの、フキゲン100%を検知しました " . $footer;
     }
-
 
     $message = $screen_name . 'さんの、';
     if($list['percent_positive'] > 0){
@@ -198,10 +199,17 @@ function get_message($account, $list){
     if($list['percent_unknown'] > 0){
         $message .= 'よく分からないものを'.$list['percent_negative'].'% ';
     }
-    if($message) $message.= '検知しました ' . $site_url;;
+    if($message) $message.= '検知しました ' . $footer;;
 
     return $message;
 }
+
+function get_tweet_link($message){
+    if(! $message) return false;
+    $link = "https://twitter.com/intent/tweet?text=+" . urlencode($message) . "+";
+    return $link;
+}
+
 
 function is_account_error($account)
 {
