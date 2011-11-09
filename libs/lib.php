@@ -40,13 +40,34 @@ function get_user($connection){
 function get_user_timeline($connection, $account){
     $cache = get_cache('screen.' . $account->screen_name);
     if($cache){
-        l('cache hit. get_user_timeline() return cache.');
+        //l('cache hit. get_user_timeline() return cache.');
         return $cache;
     }
     $content = $connection->get('statuses/user_timeline', array('screen_name' => $account->screen_name));
     if($content){
         l('cache NOT hit. get_user_timeline() connect twitter API.');
         set_cache('screen.' . $account->screen_name, $content);
+    }
+    return $content;
+}
+
+/**
+ * OAuth使わずにAPIURL直叩き
+ */
+function get_user_timeline_unofficial($screen_name){
+    $cache = get_cache('unofficial.screen.' . $screen_name);
+    if($cache){
+        l('cache hit. get_user_timeline_unofficial() return cache.');
+        return $cache;
+    }
+    $url = "https://api.twitter.com/1/statuses/user_timeline.json?include_entities=true&include_rts=true&count=20&screen_name=" . $screen_name;
+    $content = wget($url);
+    $content = json_decode($content);
+    $timeline = make_user_timeline_unofficial($content);
+    $content = get_user_status_list_unofficial($timeline);
+    if($content){
+        l('cache NOT hit. get_user_timeline_unofficial() connect twitter unofficial API.');
+        set_cache('unofficial.screen.' . $screen_name, $content);
     }
     return $content;
 }
@@ -59,20 +80,25 @@ function get_user_status_list($timeline){
         $text = str_replace("\r", " ", $text);
         $text = str_replace("\r\n", " ", $text);
         $list[] = trim($text);
-
-        // XXX:debug
-        //if(count($list) == 3) break;
+    }
+    return $list;
+}
+function get_user_status_list_unofficial($timeline){
+    $list = array();
+    foreach($timeline as $status){
+        $text = $status;
+        $text = str_replace("\n", " ", $text);
+        $text = str_replace("\r", " ", $text);
+        $text = str_replace("\r\n", " ", $text);
+        $list[] = trim($text);
     }
     return $list;
 }
 
+
 function get_emotion_list($status_list){
     foreach($status_list as $status){
-        $i++;
         $list[] = get_emotion($status);
-        //if($i == 1) break;
-        if($i == 3) break;
-        if($i == 5) break;
     }
     return $list;
 }
@@ -87,10 +113,60 @@ function get_emotion($status){
 
     $url = NAZKI_API_URL . "&text=" . urlencode($status);
     $contents = file_get_contents($url);
-    $emotion = analyze($contents, $status);
+    $emotion = analyze_nazki($contents, $status);
 
     set_cache('status.' . md5($status), $emotion);
     return $emotion;
+}
+
+function analyze_nazki($contents, $status){
+    // 感情あり
+    $positive_count = 0;
+    $negative_count = 0;
+    $unknown_count  = 0;
+    if(strpos($contents, "<ResultSet>")){
+        $xml = simplexml_load_string($contents);
+        foreach($xml as $node){
+            $text = $node->SentenceDisp;
+            $sense = $node->AnalysisGroup->AnalysisData->Sense;
+            // 感性あり
+            $sense = (array)$sense;
+            $sense = $sense[0];
+            if($sense){
+                if($sense == '好評'){
+                    //l(var_export(" > sense : 好評, " . $text,true));
+                    $positive_count++;
+                }elseif($sense == '不評'){
+                    //l(var_export(" > sense : 不評, " . $text,true));
+                    $negative_count++;
+                }else{
+                    l(var_export("!!! > sense : $sense, " . $text,true));
+                    $unknown_count++;
+                }
+            }
+            // 感性なし(感情はあるけど、好評|不評はなかったということ???)
+            else{
+                $unknown_count++;
+                l(var_export(" > sense : NO, " . $text,true));
+            }
+        }
+    }
+    // 感情なし
+    else{
+        $unknown_count++;
+        //l(var_export("emotion : NO, " . $status,true));
+    }
+
+    // ポジかネガか判定
+    $list['positive_or_negative'] = check_positive_or_negative($positive_count, $negative_count);
+
+    $list['positive_count'] = $positive_count;
+    $list['negative_count'] = $negative_count;
+    $list['unknown_count'] = $unknown_count;
+    $list['text'] = $status;
+
+    l($list);
+    return $list;
 }
 
 function get_emotion_point($emotion_list){
@@ -111,54 +187,6 @@ function get_emotion_point($emotion_list){
     $list['percent_negative'] = round(($total_negative / $total_emotion) * 100);
     $list['percent_unknown'] = round(($total_unknown  / $total_emotion) * 100);
 
-    return $list;
-}
-
-function analyze($contents, $status){
-    // 感情あり
-    $positive_count = 0;
-    $negative_count = 0;
-    $unknown_count  = 0;
-    if(strpos($contents, "<ResultSet>")){
-        $xml = simplexml_load_string($contents);
-        foreach($xml as $node){
-            $text = $node->SentenceDisp;
-            $sense = $node->AnalysisGroup->AnalysisData->Sense;
-            // 感性あり
-            $sense = (array)$sense;
-            $sense = $sense[0];
-            if($sense){
-                if($sense == '好評'){
-                    l(var_export(" > sense : 好評, " . $text,true));
-                    $positive_count++;
-                }elseif($sense == '不評'){
-                    l(var_export(" > sense : 不評, " . $text,true));
-                    $negative_count++;
-                }else{
-                    l(var_export("!!! > sense : $sense, " . $text,true));
-                    $unknown_count++;
-                }
-            }
-            // 感性なし
-            else{
-                $unknown_count++;
-                l(var_export(" > sense : NO, " . $text,true));
-            }
-
-        }
-    }
-    // 感情なし
-    else{
-        l(var_export("emotion : NO, " . $status,true));
-    }
-
-    // ポジかネガか判定
-    $list['positive_or_negative'] = check_positive_or_negative($positive_count, $negative_count);
-
-    $list['positive_count'] = $positive_count;
-    $list['negative_count'] = $negative_count;
-    $list['unknown_count'] = $unknown_count;
-    $list['text'] = $status;
     return $list;
 }
 
@@ -249,4 +277,18 @@ function is_login()
     }
 
     return true;
+}
+
+function wget($url){
+    if(! $url) return false;
+    $contents = file_get_contents($url);
+    return $contents;
+}
+
+function make_user_timeline_unofficial($status_list){
+    foreach($status_list as $status){
+        $timeline[] = $status->text;
+    }
+
+    return $timeline;
 }
