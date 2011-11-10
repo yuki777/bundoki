@@ -2,24 +2,15 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>ゴキゲン分度器</title>
+        <title><?php echo SITE_NAME; ?></title>
         <meta name="description" content="あなたのツイートからゴキゲン度合いを分析して表示します">
         <meta name="author" content="<?php echo SITE_AUTHOR; ?>">
 
-        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-        <!--[if lt IE 9]>
-        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+        <meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0rc2/jquery.mobile-1.0rc2.min.css" />
+        <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.0rc2/jquery.mobile-1.0rc2.min.js"></script>
 
-        <!-- Le styles -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <style type="text/css">
-            body {
-                padding-top: 60px;
-            }
-        </style>
-
-        <!-- Le fav and touch icons -->
         <link rel="shortcut icon" href="images/favicon.ico">
         <link rel="apple-touch-icon" href="images/tora57x57.jpg">
         <link rel="apple-touch-icon" sizes="72x72" href="images/tora72x72.jpg">
@@ -28,40 +19,35 @@
 
     <body>
 
-        <div class="topbar">
-            <div class="fill">
-                <div class="container">
-                    <a class="brand" href="#">ゴキゲン分度器</a>
-                    <ul class="nav">
-                        <?php
-                        if($is_login){
-                        echo '<li><a href="clearsessions.php">logout</a></li>';
-                        }
-                        ?>
-                    </div>
-                </div>
+        <div data-role="page">
+
+            <div data-role="header">
+                <h1><?php echo SITE_NAME; ?></h1>
+            </div><!-- /header -->
+
+            <div data-role="content">   
+
+                <h1>ゴキゲンいかが？</h1>
+                <p>ツイートからゴキゲン度合いを分析して表示します</p>
+
+                <form action="analyze.php" method="POST" data-ajax="false">
+                    <fieldset>
+                        <input type="text" name="screen_name" id="screen_name" value="" placeholder="Twitterアカウント"/>
+                        <button type="submit" data-theme="b" name="submit" value="submit-value">早速ためしてみる</button>
+                    </fieldset>
+                </form>
+
             </div>
 
-            <div class="container">
+            <div data-role="footer"><h4>&copy; <?php echo SITE_URL;?> 2011</h4></div>
+        </div>
 
-                <!-- Main hero unit for a primary marketing message or call to action -->
-                <div class="hero-unit">
-                    <h1>ゴキゲンいかが？</h1>
-                    <p>ツイートからゴキゲン度合いを分析して表示します</p>
-                    <div class="clearfix">
-                        <label for="xlInput">Twitterアカウント : </label>
-                        <form action="analyze.php" method="POST">
-                            <input class="xlarge" id="xlInput" name="screen_name" size="30" type="text" autofocus />
-                            <input type="submit" class="btn primary" value="早速ためしてみる">
-                        </form>
-                    </div><!-- /clearfix -->
-                </div>
+        <?php include('html/google_analytics.html'); ?>
 
-                <footer><p>&copy; <?php echo SITE_URL;?> 2011</p></footer>
-
-            </div> <!-- /container -->
-
-            <?php include('html/google_analytics.html'); ?>
-
-        </body>
-    </html>
+        <script>
+            $(document).ready(function(){
+                $('#screen_name').focus();
+            });
+        </script>
+    </body>
+</html>
