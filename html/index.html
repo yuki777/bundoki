@@ -12,12 +12,8 @@
         <![endif]-->
 
         <!-- Le styles -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <style type="text/css">
-            body {
-                padding-top: 60px;
-            }
-        </style>
+        <link href="css/gokibun.css" rel="stylesheet">
+
 
         <!-- Le fav and touch icons -->
         <link rel="shortcut icon" href="images/favicon.ico">
@@ -36,11 +32,6 @@
                         <li class="active"><a href="#">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#contact">Contact</a></li>
-                        <?php
-                        if($is_login){
-                        echo '<li><a href="clearsessions.php">logout</a></li>';
-                        }
-                        ?>
                     </div>
                 </div>
             </div>
@@ -49,32 +40,33 @@
 
                 <!-- Main hero unit for a primary marketing message or call to action -->
                 <div class="hero-unit">
-                    <h1>ゴキゲンいかが？</h1>
-                    <p>ツイートからゴキゲン度合いを分析して表示します</p>
-                    <div class="clearfix">
-                        <label for="xlInput">Twitterアカウント : </label>
+                	<div class="hero-unit-inner">
+                    <h1>あなたのゴキゲン何度？</h1>
+                    <p>あなたのツイートからゴキゲンななめ度合いを分析して表示します</p>
+                    <div class="inputTwAc clearfix">
+                        <label for="xlInput">あなたのTwitterアカウント</label>
                         <form action="analyze.php" method="POST">
                             <input class="xlarge" id="xlInput" name="screen_name" size="30" type="text" autofocus />
                             <input type="submit" class="btn primary" value="早速ためしてみる">
                         </form>
                     </div><!-- /clearfix -->
                 </div>
+                </div>
 
                 <!-- Example row of columns -->
                 <div class="row">
                     <div class="span-one-third">
-                        <h2>Heading</h2>
-                        <p>Etiam porta sem malesuada magna mollis euismod. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.</p>
-                        <p><a class="btn" href="#">View details &raquo;</a></p>
+                        <h2>ゴキゲン分度器</h2>
+                        <div class="topIcons"><img src="images/topImg_02.png" alt="分度器アイコン" /></div>
+                        <p class="topIconsDesc">ゴキゲン斜めなあなた。どのくらい斜めなのかゴキゲン分度器が測ります！</p>
                     </div>
                     <div class="span-one-third">
-                        <h2>Heading</h2>
-                        <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                        <p><a class="btn" href="#">View details &raquo;</a></p>
+                        <h2>普通の分度器として</h2>
+                        <p class="topIconsDesc">使えません</p>
                     </div>
                     <div class="span-one-third">
-                        <h2>Heading</h2>
-                        <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+                        <h2>スマフォも対応</h2>
+                        <p class="topIconsDesc">絶賛対応中！</p>
                         <p><a class="btn" href="#">View details &raquo;</a></p>
                     </div>
                 </div>
