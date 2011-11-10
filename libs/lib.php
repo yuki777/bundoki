@@ -102,26 +102,6 @@ function get_emotion_list($status_list){
         $list[] = get_emotion($status);
     }
     return $list;
-
-    //// curl_multiを使って一度に20APIコールするver
-    //// 結局APIサーバ側で制限しているのか、都度コールに比べて結果がバラバラなので今回は使えなかった
-    //if(! $status_list) return;
-    //$cache = get_cache('status_list.' . md5(serialize($status_list)));
-    //if($cache){
-    //    l("cache hit. get_emotion_list() return cache.");
-    //    return $cache;
-    //}
-    //foreach($status_list as $status){
-    //    $url_list[] = NAZKI_API_URL . "&text=" . urlencode($status);
-    //}
-    //$contents_list = wget_multi($url_list);
-    //foreach($contents_list as $k => $contents){
-    //    $emotion_list[] = analyze_nazki($contents['content'], $status[$k]);
-    //}
-    //
-    //l("cache NOT hit. get_emotion_list() connect NAZKI API.");
-    //set_cache('status_list.' . md5(serialize($status_list)), $emotion_list);
-    //return $emotion_list;
 }
 
 function get_emotion($status){
