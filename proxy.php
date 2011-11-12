@@ -7,6 +7,15 @@ $mode = $_GET['mode'];
 l($screen_name);
 l($mode);
 
+if($mode == 'get_user_status_list'){
+    $timeline     = get_user_timeline_unofficial($screen_name);
+    $status_list  = get_user_status_list_unofficial($timeline);
+    $data         = array('status_list' => $status_list);
+    $data         = json_encode($data);
+    echo $data;
+    exit;
+}
+
 if($mode == 'get_data'){
     $timeline     = get_user_timeline_unofficial($screen_name);
     $status_list  = get_user_status_list_unofficial($timeline);
@@ -23,7 +32,6 @@ if($mode == 'get_data'){
         'link'         => $link,
     );
     $data = json_encode($data);
-    //l($data);
     echo $data;
     exit;
 }
