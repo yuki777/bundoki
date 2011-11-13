@@ -185,6 +185,9 @@
                                 $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
                                 $('#loading').activity(false);
                                 $("#progressbar").progressBar(100, { showText: false, barImage: '/images/progressbg_red.gif'} );
+                                setTimeout( function() { 
+                                    $("#progressbar").css('display', 'none');
+                                }, 1000);
                             }
                             i++;
                         },
