@@ -20,14 +20,15 @@
         </style>
 
         <!-- Le fav and touch icons -->
-        <link rel="shortcut icon" href="images/favicon.ico">
-        <link rel="apple-touch-icon" href="images/tora57x57.jpg">
-        <link rel="apple-touch-icon" sizes="72x72" href="images/tora72x72.jpg">
-        <link rel="apple-touch-icon" sizes="114x114" href="images/tora114x114.jpg">
+        <link rel="shortcut icon" href="/images/favicon.ico">
+        <link rel="apple-touch-icon" href="/images/tora57x57.jpg">
+        <link rel="apple-touch-icon" sizes="72x72" href="/images/tora72x72.jpg">
+        <link rel="apple-touch-icon" sizes="114x114" href="/images/tora114x114.jpg">
 
         <!-- jquery -->
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-
+        <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script> -->
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+        
         <!-- loading animation jquery plugin -->
         <!-- http://neteye.github.com/activity-indicator.html -->
         <script src="/js/loading/jquery.activity-indicator-1.0.0.js" /></script>
@@ -65,11 +66,9 @@
             <!-- Main hero unit for a primary marketing message or call to action -->
             <div class="hero-unit">
                 <h1>ゴキゲンいかが？</h1>
+                <div id="loading"></div>
 
                 <p></p>
-
-                <!-- ローディングアニメーション -->
-                <div id="busy" class="loading"></div>
 
                 <!-- 結果メッセージ -->
                 <div id="message"></div>
@@ -87,14 +86,6 @@
                 </div>
             </div>
 
-            <!-- 感情解析結果 --> 
-            <div class="alert-message block-message warning">
-                <div id="emotion_point">
-                    <ul>
-                    </ul>
-                </div>
-            </div>
-
             <footer><p>&copy; <?php echo SITE_URL;?> 2011</p></footer>
 
         </div> <!-- /container -->
@@ -103,54 +94,81 @@
 
         <script>
             $(document).ready(function () {
-                sessionStorage.clear();
                 // ローディングアニメーションstart
-                $('#busy').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
-                // 描画に必要なデータを取得(callbackでDBにセット)
-                get_data();
+                $('#loading').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
+                // ツイートリスト取得
+                get_status_list();
+                //setTimeout( function() { ... }, 0);
             });
 
-            function update_html(){
-                var json = JSON.parse(sessionStorage.getItem('json'));
-                // status_list
-                for(var i in json.status_list) {
-                    $("#status_list ul").append('<li>' + json.status_list[i] + '</li>');
-                }
-                // emotion_point
-                $("#emotion_point ul").append('<li>total_emotion  : ' + json.point.total_emotion  + '</li>');
-                $("#emotion_point ul").append('<li>total_positive : ' + json.point.total_positive + '</li>');
-                $("#emotion_point ul").append('<li>total_negative : ' + json.point.total_negative + '</li>');
-                $("#emotion_point ul").append('<li>total_unknown  : ' + json.point.total_unknown  + '</li>');
-                $("#emotion_point ul").append('<li>total_text     : ' + json.point.total_text     + '</li>');
-                // message
-                $('#message').html('<p>' + json.message + '</p>');
-                // tweet_link
-                $('#lets_tweet').html('<p><a target="_brank" href="' + json.link + '">結果をTwitterでつぶやこう</a></p>');
-            }
-
-            function get_data(){
+            function get_status_list(){
                 var xhr = new XMLHttpRequest();
+                var url = '/proxy/mode/get_status_list/screen_name/' + "<?php echo $screen_name;?>" + '/datetime/' + "<?php echo $datetime;?>" + '/';
+                // 取得完了したら
                 xhr.addEventListener("load", function(e) {
-                    update_html();
-                    setTimeout( function() {
-                        $('#busy').activity(false);
-                    }, 1000);
+                    var status_list = $.parseJSON(sessionStorage.getItem('status_list'));
+                    for(var i in status_list.body) {
+                        // 各ツイートの感情を取得
+                        get_emotion(status_list.body[i]);
+                        // html更新
+                        $("#status_list ul").append('<li><div id="emotion_'+status_list.body[i]['key']+'"><div id="emotion_type_'+status_list.body[i]['key']+'"></div>' + status_list.body[i]['text'] + '</div></li>');
+                    }
                 }, false);
-                var url = '/proxy/mode/get_data/screen_name/' + "<?php echo $screen_name; ?>" + '/';
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === 4 && xhr.status == 200) {
-                        var json = $.parseJSON(xhr.responseText);
-                        sessionStorage.setItem('json',         JSON.stringify(json));
-                        sessionStorage.setItem('timeline',     JSON.stringify(json.timeline));
-                        sessionStorage.setItem('status_list',  JSON.stringify(json.status_list));
-                        sessionStorage.setItem('emotion_list', JSON.stringify(json.emotion_list));
-                        sessionStorage.setItem('point',        JSON.stringify(json.point));
-                        sessionStorage.setItem('message',      JSON.stringify(json.message));
+                        // $.parseJSON(), JSON.stringify()
+                        // sessionStorageにいれておく
+                        sessionStorage.setItem('status_list', xhr.responseText);
                     }
                 };
                 xhr.send(null);
             }
+
+            var get_emotion = (function(){
+                // 使いまわしたいのでここで宣言。クロージャ
+                var i = 0;
+                var emotion_list = [];
+
+                return function(status){
+                    //if(! status) return null;
+                    var xhr = new XMLHttpRequest();
+                    var url = '/proxy/mode/get_emotion/status/';
+                    // 1ツイートの取得が完了したら
+                    xhr.addEventListener("load", function(e) {
+                        //var emotion_list = sessionStorage.getItem('emotion_list');
+                        //var emotion = xhr.responseText;
+                        //emotion_list.push;
+                        var json = JSON.parse(xhr.responseText);
+                        //console.debug(json.body['emotion_type']);
+                        //emotion_list[i] = JSON.stringify(json.body);
+                        emotion_list[i] = (json.body);
+                        // 20回目なら(完了のはず)
+                        if(i==20){
+                            // ローディングアニメーションstop
+                            $('#loading').activity(false);
+                            // メッセージ表示
+                            $('#message').html('<p>' + "<?php echo $screen_name; ?>" + 'さんの、positiveをn,negativeをn,unknownをn,検知しました</p>');
+                            // ツイートshareしようリンク
+                            var link = "https://twitter.com/intent/tweet?text=+...+";
+                            $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
+                            //var list = sessionStorage.getItem('emotion_list');
+                            console.debug(emotion_list);
+                        }
+                    }, false);
+                    xhr.open('POST', url, true);
+                    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    xhr.onreadystatechange = function() {
+                        if(xhr.readyState === 4 && xhr.status == 200) {
+                            sessionStorage.setItem('emotion.' + status['key'], xhr.responseText);
+                            var emotion = $.parseJSON(sessionStorage.getItem('emotion.' + status['key']));
+                            $("#emotion_type_"+status['key']).html(emotion.body['emotion_type']);
+                            i++;
+                        }
+                    };
+                    xhr.send("mode=get_motion&status=" + encodeURI(status['text']));
+                }
+            })();
         </script>
     </body>
 </html>

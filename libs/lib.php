@@ -5,11 +5,14 @@ function conn_cache(){
 }
 
 function set_cache($k, $v){
-    $expire = 3600;
+    $k = md5($k);
+    $expire = 86400;
     return memcache_set(conn_cache(), ENV . $k, serialize($v), 0, $expire);
 }
 
 function get_cache($k){
+    //return false;//xxx
+    $k = md5($k);
     return unserialize(memcache_get(conn_cache(), ENV . $k));
 }
 
@@ -32,23 +35,24 @@ function v($params = null){
     return l($params);
 }
 
-function get_user($connection){
-    $account = $connection->get('account/verify_credentials');
-    return $account;
-}
-
-function get_user_timeline($connection, $account){
-    $cache = get_cache('screen.' . $account->screen_name);
+function get_status_list($screen_name, $datetime){
+    $cache = get_cache('status_list.' . $datetime . '.' . $screen_name);
     if($cache){
-        //l('cache hit. get_user_timeline() return cache.');
+        l('cache hit. get_user_status_list() return cache.');
         return $cache;
     }
-    $content = $connection->get('statuses/user_timeline', array('screen_name' => $account->screen_name));
-    if($content){
-        l('cache NOT hit. get_user_timeline() connect twitter API.');
-        set_cache('screen.' . $account->screen_name, $content);
+
+    // get statuses, datetime, ,images,,, etc
+    $timeline = get_user_timeline_unofficial($screen_name);
+    // get only statuses
+    $status_list = get_user_status_list_unofficial($timeline);
+    l($status_list);
+
+    if($status_list){
+        l('cache NOT hit. get_user_status_list() connect twitter unofficial API.');
+        set_cache('status_list.' . $datetime . '.' . $screen_name, $status_list);
     }
-    return $content;
+    return $status_list;
 }
 
 /**
@@ -72,34 +76,19 @@ function get_user_timeline_unofficial($screen_name){
     return $content;
 }
 
-function get_user_status_list($timeline){
-    $list = array();
-    foreach($timeline as $status){
-        $text = $status->text;
-        $text = str_replace("\n", " ", $text);
-        $text = str_replace("\r", " ", $text);
-        $text = str_replace("\r\n", " ", $text);
-        $list[] = trim($text);
-    }
-    return $list;
-}
 function get_user_status_list_unofficial($timeline){
     $list = array();
+    $i = 0;
     foreach($timeline as $status){
-        $text = $status;
+        $text = $status['text'];
         $text = str_replace("\n", " ", $text);
         $text = str_replace("\r", " ", $text);
         $text = str_replace("\r\n", " ", $text);
-        $list[] = trim($text);
-    }
-    return $list;
-}
-
-
-function get_emotion_list($status_list){
-    // 都度APIコールするver
-    foreach($status_list as $status){
-        $list[] = get_emotion($status);
+        $text = trim($text);
+        $key  = md5($text);
+        $list[$i]['key'] = $key;
+        $list[$i]['text'] = $text;
+        $i++;
     }
     return $list;
 }
@@ -107,7 +96,7 @@ function get_emotion_list($status_list){
 function get_emotion($status){
     if(! $status) return;
 
-    $cache = get_cache('status.' . md5($status));
+    $cache = get_cache('status.' . $status);
     if($cache){
         //l("cache hit. get_emotion() return cache.");
         return $cache;
@@ -118,7 +107,7 @@ function get_emotion($status){
     $emotion = analyze_nazki($contents, $status);
 
     l("cache NOT hit. get_emotion() connect NAZKI API.");
-    set_cache('status.' . md5($status), $emotion);
+    set_cache('status.' . $status, $emotion);
     return $emotion;
 }
 
@@ -160,13 +149,14 @@ function analyze_nazki($contents, $status){
         //l(var_export("emotion : NO, " . $status,true));
     }
 
-    // ポジかネガか判定
-    $list['positive_or_negative'] = check_positive_or_negative($positive_count, $negative_count);
+    // ポジかネガか不明か判定
+    $list['emotion_type'] = get_emotion_type($positive_count, $negative_count);
 
-    $list['positive_count'] = $positive_count;
-    $list['negative_count'] = $negative_count;
-    $list['unknown_count'] = $unknown_count;
+    $list['positive'] = $positive_count;
+    $list['negative'] = $negative_count;
+    $list['unknown'] = $unknown_count;
     $list['text'] = $status;
+    $list['key'] = md5($status);
 
     //l($list);
     return $list;
@@ -176,9 +166,9 @@ function get_emotion_point($emotion_list){
     $list['total_positive'] = 0;
     $list['total_negative'] = 0;
     foreach($emotion_list as $emotion){
-        $total_positive = $emotion['positive_count'] + $total_positive;
-        $total_negative = $emotion['negative_count'] + $total_negative;
-        $total_unknown = $emotion['unknown_count'] + $total_unknown;
+        $total_positive = $emotion['positive'] + $total_positive;
+        $total_negative = $emotion['negative'] + $total_negative;
+        $total_unknown = $emotion['unknown'] + $total_unknown;
     }
     $list['total_text'] = count($emotion_list);
     $list['total_positive'] = $total_positive;
@@ -190,7 +180,7 @@ function get_emotion_point($emotion_list){
     return $list;
 }
 
-function check_positive_or_negative($p, $n)
+function get_emotion_type($p, $n)
 {
     if($p == 0 && $n == 0){
         return 'unknown';
@@ -221,48 +211,9 @@ function get_tweet_link($message){
 }
 
 
-function is_account_error($account)
-{
-    if(isset($account->error) === false){
-        return false;
-    }
-
-    if(! $account){
-        l($account);
-        return true;
-    }
-
-    if($account->error == 'Invalid application'
-    || $account->error == 'Could not authenticate you.'
-    || $account->error == 'Could not authenticate with OAuth.'){
-        l("! account error. redirect to index.php");
-        l($account);
-        $url = SITE_URL . '/index.php';
-        header('Location: ' . $url); 
-        exit;
-    }
-
-    if($account->error){
-        l($account);
-        return true;
-    }
-
-    return false;
-}
-
-function is_login()
-{
-    if (empty($_SESSION['access_token'])
-     || empty($_SESSION['access_token']['oauth_token'])
-     || empty($_SESSION['access_token']['oauth_token_secret'])) {
-        return false;
-    }
-
-    return true;
-}
-
 function wget($url){
     if(! $url) return false;
+    usleep(500);
     $contents = file_get_contents($url);
     return $contents;
 }
@@ -316,16 +267,17 @@ function wget_multi( $url_list ) {
 }  
 
 function make_user_timeline_unofficial($status_list){
+    $i = 0;
     foreach($status_list as $status){
-        $timeline[] = $status->text;
+        //$timeline[] = $status->text;
+        $timeline[$i]['key'] = md5($status->text);
+        $timeline[$i]['text'] = $status->text;
+        $i++;
     }
     return $timeline;
 }
 
-function output($file){
-
-    // そろそろフレームワーク使うべし。
-    global $screen_name;
+function get_template($file){
 
     if(is_smartphone()){
         $pathinfo = pathinfo($file);
@@ -334,7 +286,7 @@ function output($file){
             $file = $smartphone_file;
         }
     }
-    include($file);
+    return($file);
 }
 
 function is_smartphone(){

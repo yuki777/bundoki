@@ -2,36 +2,31 @@
 require_once('configs/config.php');
 require_once('libs/lib.php');
 
-$screen_name = $_GET['screen_name'];
 $mode = $_GET['mode'];
-l($screen_name);
-l($mode);
 
-if($mode == 'get_user_status_list'){
-    $timeline     = get_user_timeline_unofficial($screen_name);
-    $status_list  = get_user_status_list_unofficial($timeline);
-    $data         = array('status_list' => $status_list);
-    $data         = json_encode($data);
+if($mode == 'get_status_list'){
+    $status_list = get_status_list($_GET['screen_name'], $_GET['datetime']);
+
+    $status = 500;
+    if($status_list) $status = 200;
+    $header = array('datetime' => date('Y:m:d H:i:s'), 'count' => count($status_list));
+    $data   = array('status' => $status, 'header' => $header, 'body' => $status_list);
+    $data   = json_encode($data);
+
     echo $data;
     exit;
 }
 
-if($mode == 'get_data'){
-    $timeline     = get_user_timeline_unofficial($screen_name);
-    $status_list  = get_user_status_list_unofficial($timeline);
-    $emotion_list = get_emotion_list($status_list);
-    $point        = get_emotion_point($emotion_list);
-    $message      = get_message($screen_name, $point);
-    $link         = get_tweet_link($message);
-    $data         = array(
-        'timeline'     => $timeline,
-        'status_list'  => $status_list,
-        'emotion_list' => $emotion_list,
-        'point'        => $point,
-        'message'      => $message,
-        'link'         => $link,
-    );
-    $data = json_encode($data);
+if($mode == 'get_emotion'){
+    $emotion = get_emotion(urldecode($_POST['status']));
+
+    $status = 500;
+    if($emotion) $status = 200;
+    $header = array('datetime' => date('Y:m:d H:i:s'));
+    $data   = array('status' => $status, 'header' => $header, 'body' => $emotion);
+    $data   = json_encode($data);
+
     echo $data;
     exit;
 }
+
