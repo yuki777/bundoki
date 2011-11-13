@@ -113,9 +113,10 @@
                     success : function(json) {
                         // json objectをsessionStorageで使うにはJSON.stringify()でいれて、JSON.parse()で取り出す
                         sessionStorage.setItem('status_list', JSON.stringify(json));
-                        for(var i in json.body) {
-                            get_emotion(json.body[i]);
-                            $("#status_list ul").append('<li><div id="emotion_'+json.body[i]['key']+'"><div id="emotion_type_'+json.body[i]['key']+'"></div>' + json.body[i]['text'] + '</div></li>');
+                        var status_list = json;
+                        for(var i in status_list.body) {
+                            get_emotion(status_list.body[i]);
+                            $("#status_list ul").append('<li><div id="emotion_'+status_list.body[i]['key']+'"><div id="emotion_type_'+status_list.body[i]['key']+'"></div>' + status_list.body[i]['text'] + '</div></li>');
                         }
                     },
                     error : function(xhr, textStatus, errorThrown ){
@@ -141,9 +142,7 @@
 
             var get_emotion = (function(){
                 var i = 0;
-                var x = 0;
                 var emotion_list = [];
-                var status_list = JSON.parse(sessionStorage.getItem('status_list'));
                 var url = '/proxy/mode/get_emotion/status/';
                 return function(status){
                     // http://api.jquery.com/jQuery.ajax/
@@ -158,12 +157,12 @@
                         retryLimit : 3,
                         success : function(json) {
                             var emotion = json;
-                            emotion_list[x] = JSON.stringify(emotion);
-                            //emotion_list[x] = (emotion);
+                            emotion_list[i] = JSON.stringify(emotion);
                             sessionStorage.setItem('emotion.' + status['key'], JSON.stringify(emotion));
                             $("#emotion_type_"+status['key']).html(emotion.body['emotion_type']);
                             // tweetリストの最後なら
-                            if(x == (status_list.header['count'] - 1)){
+                            var status_list = JSON.parse(sessionStorage.getItem('status_list'));
+                            if(i == (status_list.header['count'] - 1)){
                                 sessionStorage.setItem('emotion_list', emotion_list);
                                 var emotion_point = get_emotion_point(emotion_list);
                                 var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、ゴキゲンを'+emotion_point.positive+'°、フキゲンを'+emotion_point.negative+'n°、よくわからないものを'+emotion_point.unknown+'°、検知しました。';
@@ -173,7 +172,7 @@
                                 $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
                                 $('#loading').activity(false);
                             }
-                            x++;
+                            i++;
                         },
                         error : function(xhr, textStatus, errorThrown ){
                             if(textStatus == 'timeout'){
@@ -203,12 +202,6 @@
                 var total_emotion  = 0;
                 for(var i in emotion_list){
                     var emotion = JSON.parse(emotion_list[i]);
-                    //console.debug(i +":key:"+emotion.body.key);
-                    //console.debug(i +":emotion_type:"+emotion.body.emotion_type);
-                    //console.debug(i +":positive:"+emotion.body.positive);
-                    //console.debug(i +":negative:"+emotion.body.negative);
-                    //console.debug(i +":unkown:"+emotion.body.unknown);
-                    //console.debug(i +":text:"+emotion.body.text);
                     total_positive = total_positive + emotion.body.positive;
                     total_negative = total_negative + emotion.body.negative;
                     total_unknown  = total_unknown  + emotion.body.unknown;
@@ -222,7 +215,6 @@
                     "total_text"    : total_text,
                     "total_emotion" : total_emotion
                 };
-                //console.debug(emotion_point);
                 return emotion_point;
             }
         </script>
