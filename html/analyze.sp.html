@@ -131,7 +131,16 @@
                             var emotion = json;
                             emotion_list[i] = JSON.stringify(emotion);
                             sessionStorage.setItem('emotion.' + status['key'], JSON.stringify(emotion));
-                            $("#emotion_type_"+status['key']).html(emotion.body['emotion_type']);
+                            $("#emotion_type_"+status['key']).attr("type", emotion.body['emotion_type']);
+                            if(emotion.body['emotion_type'] == 'positive'){
+                                $("#emotion_type_"+status['key']).html('<span class="label success">ゴキゲン</span>');
+                            }else if(emotion.body['emotion_type'] == 'negative'){
+                            $("#emotion_type_"+status['key']).html('<span class="label important">フキゲン</span>');
+                            }else if(emotion.body['emotion_type'] == 'unknown'){
+                            $("#emotion_type_"+status['key']).html('<span class="label">よくわからない</span>');
+                            }else{
+                                console.debug("Ooooooops! unkown emotion_type.");
+                            }
                             // tweetリストの最後なら
                             var status_list = JSON.parse(sessionStorage.getItem('status_list'));
                             if(i == (status_list.header['count'] - 1)){
