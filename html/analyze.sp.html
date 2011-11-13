@@ -66,6 +66,7 @@
 
         <script>
             $(document).ready(function () {
+                sessionStorage.clear();
                 // ローディングアニメーションstart
                 $('#loading').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
                 // ツイートリスト取得
@@ -74,71 +75,105 @@
             });
 
             function get_status_list(){
-                var xhr = new XMLHttpRequest();
                 var url = '/proxy/mode/get_status_list/screen_name/' + "<?php echo $screen_name;?>" + '/datetime/' + "<?php echo $datetime;?>" + '/';
-                // 取得完了したら
-                xhr.addEventListener("load", function(e) {
-                    var status_list = $.parseJSON(sessionStorage.getItem('status_list'));
-                    for(var i in status_list.body) {
-                        // 各ツイートの感情を取得
-                        get_emotion(status_list.body[i]);
-                        // html更新
-                        $("#status_list ul").append('<li><div id="emotion_'+status_list.body[i]['key']+'"><div id="emotion_type_'+status_list.body[i]['key']+'"></div>' + status_list.body[i]['text'] + '</div></li>');
+                $.ajax({
+                    url : url,
+                    type : 'get',
+                    dataType : 'json',
+                    timeout : 20000,
+                    tryCount : 0,
+                    retryLimit : 3,
+                    success : function(json) {
+                        // json objectをsessionStorageで使うにはJSON.stringify()でいれて、JSON.parse()で取り出す
+                        sessionStorage.setItem('status_list', JSON.stringify(json));
+                        for(var i in json.body) {
+                            // 各ツイートの感情を取得
+                            get_emotion(json.body[i]);
+                            // html更新
+                            $("#status_list ul").append('<li><div id="emotion_'+json.body[i]['key']+'"><div id="emotion_type_'+json.body[i]['key']+'"></div>' + json.body[i]['text'] + '</div></li>');
+                        }
+                    },
+                    error : function(xhr, textStatus, errorThrown ){
+                        if(textStatus == 'timeout'){
+                            this.tryCount++;
+                            if(this.tryCount <= this.retryLimit){
+                                //try again
+                                $.ajax(this);
+                                return;
+                            }
+                            console.debug('We have tried ' + this.retryLimit + ' times and it is still not working. We give in. Sorry.');
+                            return;
+                        }
+                        if(xhr.status == 500){
+                            console.debug('Oops! 500.');
+                            }else if(xhr.status == 404){
+                            console.debug('Oops! 404.');
+                            }else{
+                            console.debug('Oops! There was a problem, sorry.');
+                        }
                     }
-                }, false);
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === 4 && xhr.status == 200) {
-                        // $.parseJSON(), JSON.stringify()
-                        // sessionStorageにいれておく
-                        sessionStorage.setItem('status_list', xhr.responseText);
-                    }
-                };
-                xhr.send(null);
+                });
             }
 
             var get_emotion = (function(){
                 // 使いまわしたいのでここで宣言。クロージャ
                 var i = 0;
+                var x = 0;
                 var emotion_list = [];
+                var status_list = JSON.parse(sessionStorage.getItem('status_list'));
+                var url = '/proxy/mode/get_emotion/status/';
 
                 return function(status){
-                    //if(! status) return null;
-                    var xhr = new XMLHttpRequest();
-                    var url = '/proxy/mode/get_emotion/status/';
-                    // 1ツイートの取得が完了したら
-                    xhr.addEventListener("load", function(e) {
-                        //var emotion_list = sessionStorage.getItem('emotion_list');
-                        //var emotion = xhr.responseText;
-                        //emotion_list.push;
-                        var json = JSON.parse(xhr.responseText);
-                        //console.debug(json.body['emotion_type']);
-                        //emotion_list[i] = JSON.stringify(json.body);
-                        emotion_list[i] = (json.body);
-                        // 20回目なら(完了のはず)
-                        if(i==20){
-                            // ローディングアニメーションstop
-                            $('#loading').activity(false);
-                            // メッセージ表示
-                            $('#message').html('<p>' + "<?php echo $screen_name; ?>" + 'さんの、positiveをn,negativeをn,unknownをn,検知しました</p>');
-                            // ツイートshareしようリンク
-                            var link = "https://twitter.com/intent/tweet?text=+...+";
-                            $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
-                            //var list = sessionStorage.getItem('emotion_list');
-                            console.debug(emotion_list);
-                        }
-                    }, false);
-                    xhr.open('POST', url, true);
-                    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                    xhr.onreadystatechange = function() {
-                        if(xhr.readyState === 4 && xhr.status == 200) {
-                            sessionStorage.setItem('emotion.' + status['key'], xhr.responseText);
-                            var emotion = $.parseJSON(sessionStorage.getItem('emotion.' + status['key']));
+                    // http://api.jquery.com/jQuery.ajax/
+                    // http://www.zeroedandnoughted.com/?p=185
+                    $.ajax({
+                        url : url,
+                        type : 'post',
+                        data :  {mode : 'get_motion', status : encodeURI(status['text'])},
+                        dataType : 'json',
+                        timeout : 20000,
+                        tryCount : 0,
+                        retryLimit : 3,
+                        success : function(json) {
+                            var emotion = json;
+                            emotion_list[x] = JSON.stringify(emotion);
+                            sessionStorage.setItem('emotion.' + status['key'], JSON.stringify(emotion));
+
                             $("#emotion_type_"+status['key']).html(emotion.body['emotion_type']);
-                            i++;
+
+                            // tweetリストの最後なら
+                            if(x == (status_list.header['count'] - 1)){
+                                sessionStorage.setItem('emotion_list', emotion_list);
+                                // ローディングアニメーションstop
+                                $('#loading').activity(false);
+                                // メッセージ表示
+                                $('#message').html('<p>' + "<?php echo $screen_name; ?>" + 'さんの、positiveをn,negativeをn,unknownをn,検知しました</p>');
+                                // ツイートshareしようリンク
+                                var link = "https://twitter.com/intent/tweet?text=+...+";
+                                $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
+                            }
+                            x++;
+                        },
+                        error : function(xhr, textStatus, errorThrown ){
+                            if(textStatus == 'timeout'){
+                                this.tryCount++;
+                                if(this.tryCount <= this.retryLimit){
+                                    //try again
+                                    $.ajax(this);
+                                    return;
+                                }
+                                console.debug('We have tried ' + this.retryLimit + ' times and it is still not working. We give in. Sorry.');
+                                return;
+                            }
+                            if(xhr.status == 500){
+                                console.debug('Oops! 500.');
+                                }else if(xhr.status == 404){
+                                console.debug('Oops! 404.');
+                                }else{
+                                console.debug('Oops! There was a problem, sorry.');
+                            }
                         }
-                    };
-                    xhr.send("mode=get_motion&status=" + encodeURI(status['text']));
+                    });
                 }
             })();
         </script>
