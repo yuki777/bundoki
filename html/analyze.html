@@ -25,13 +25,13 @@
         <link rel="apple-touch-icon" sizes="72x72" href="/images/tora72x72.jpg">
         <link rel="apple-touch-icon" sizes="114x114" href="/images/tora114x114.jpg">
 
-        <!-- jquery -->
-        <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script> -->
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
         
+        <script src="/js/jquery.progressbar.min.js" /></script>
+
         <!-- loading animation jquery plugin -->
         <!-- http://neteye.github.com/activity-indicator.html -->
-        <script src="/js/loading/jquery.activity-indicator-1.0.0.js" /></script>
+        <script src="/js/jquery.activity-indicator-1.0.0.min.js" /></script>
         <style type="text/css">
         .loading {
             width: 200;
@@ -63,16 +63,16 @@
 
         <div class="container">
 
-            <!-- Main hero unit for a primary marketing message or call to action -->
             <div class="hero-unit">
                 <h1>ゴキゲンいかが？</h1>
 
                 <p></p>
 
                 <div id="loading"></div>
+                <div id="progressbar"></div>
 
                 <!-- 結果メッセージ -->
-                <div id="message"></div>
+                <div id="message"><p>測っています...</p></div>
 
                 <!-- tweetしよう -->
                 <div id="lets_tweet"></div>
@@ -96,6 +96,8 @@
         <script>
             $(document).ready(function () {
                 sessionStorage.clear();
+                $("#progressbar").progressBar(0, { showText: false, barImage: '/images/progressbg_red.gif'} );
+
                 // ローディングアニメーションstart
                 $('#loading').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
                 get_status_list();
@@ -170,8 +172,9 @@
                             }else{
                                 console.debug("Ooooooops! unkown emotion_type.");
                             }
-                            // tweetリストの最後なら
                             var status_list = JSON.parse(sessionStorage.getItem('status_list'));
+                            $("#progressbar").progressBar(i*5, { showText: false, barImage: '/images/progressbg_red.gif'} );
+                            // tweetリストの最後なら
                             if(i == (status_list.header['count'] - 1)){
                                 sessionStorage.setItem('emotion_list', emotion_list);
                                 var emotion_point = get_emotion_point(emotion_list);
@@ -181,6 +184,7 @@
                                 $('#message').html('<p>' + text + '</p>');
                                 $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
                                 $('#loading').activity(false);
+                                $("#progressbar").progressBar(100, { showText: false, barImage: '/images/progressbg_red.gif'} );
                             }
                             i++;
                         },
@@ -216,14 +220,19 @@
                     total_negative = total_negative + emotion.body.negative;
                     total_unknown  = total_unknown  + emotion.body.unknown;
                 }
+
+                total_positive = total_positive * 10;
+                total_negative = total_negative * 10;
+                total_unknown  = total_unknown  * 10;
+
                 var total_text    = emotion_list.length;
                 var total_emotion = total_positive + total_negative + total_unknown;
                 var emotion_point = {
-                    "positive"      : total_positive,
-                    "negative"      : total_negative,
-                    "unknown"       : total_unknown,
-                    "total_text"    : total_text,
-                    "total_emotion" : total_emotion
+                    "positive"       : total_positive,
+                    "negative"       : total_negative,
+                    "unknown"        : total_unknown,
+                    "total_text"     : total_text,
+                    "total_emotion"  : total_emotion
                 };
                 return emotion_point;
             }
