@@ -97,7 +97,6 @@
                 sessionStorage.clear();
                 // ローディングアニメーションstart
                 $('#loading').activity({segments: 12, width: 5.5, space: 6, length: 13, color: '#252525', speed: 5.5});
-                // ツイートリスト取得
                 get_status_list();
                 //setTimeout( function() { ... }, 0);
             });
@@ -115,9 +114,7 @@
                         // json objectをsessionStorageで使うにはJSON.stringify()でいれて、JSON.parse()で取り出す
                         sessionStorage.setItem('status_list', JSON.stringify(json));
                         for(var i in json.body) {
-                            // 各ツイートの感情を取得
                             get_emotion(json.body[i]);
-                            // html更新
                             $("#status_list ul").append('<li><div id="emotion_'+json.body[i]['key']+'"><div id="emotion_type_'+json.body[i]['key']+'"></div>' + json.body[i]['text'] + '</div></li>');
                         }
                     },
@@ -125,7 +122,6 @@
                         if(textStatus == 'timeout'){
                             this.tryCount++;
                             if(this.tryCount <= this.retryLimit){
-                                //try again
                                 $.ajax(this);
                                 return;
                             }
@@ -144,13 +140,11 @@
             }
 
             var get_emotion = (function(){
-                // 使いまわしたいのでここで宣言。クロージャ
                 var i = 0;
                 var x = 0;
                 var emotion_list = [];
                 var status_list = JSON.parse(sessionStorage.getItem('status_list'));
                 var url = '/proxy/mode/get_emotion/status/';
-
                 return function(status){
                     // http://api.jquery.com/jQuery.ajax/
                     // http://www.zeroedandnoughted.com/?p=185
@@ -165,20 +159,19 @@
                         success : function(json) {
                             var emotion = json;
                             emotion_list[x] = JSON.stringify(emotion);
+                            //emotion_list[x] = (emotion);
                             sessionStorage.setItem('emotion.' + status['key'], JSON.stringify(emotion));
-
                             $("#emotion_type_"+status['key']).html(emotion.body['emotion_type']);
-
                             // tweetリストの最後なら
                             if(x == (status_list.header['count'] - 1)){
                                 sessionStorage.setItem('emotion_list', emotion_list);
-                                // ローディングアニメーションstop
-                                $('#loading').activity(false);
-                                // メッセージ表示
-                                $('#message').html('<p>' + "<?php echo $screen_name; ?>" + 'さんの、positiveをn,negativeをn,unknownをn,検知しました</p>');
-                                // ツイートshareしようリンク
-                                var link = "https://twitter.com/intent/tweet?text=+...+";
+                                var emotion_point = get_emotion_point(emotion_list);
+                                var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、ゴキゲンを'+emotion_point.positive+'°、フキゲンを'+emotion_point.negative+'n°、よくわからないものを'+emotion_point.unknown+'°、検知しました。';
+                                var footer = " " + "<?php echo HASH_TAG;?>" + ' ' + "<?php echo SITE_URL;?>" + ' ';
+                                var link = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + footer);
+                                $('#message').html('<p>' + text + '</p>');
                                 $('#lets_tweet').html('<p><a target="_brank" href="'+link+'">結果をTwitterでつぶやこう</a></p>');
+                                $('#loading').activity(false);
                             }
                             x++;
                         },
@@ -186,7 +179,6 @@
                             if(textStatus == 'timeout'){
                                 this.tryCount++;
                                 if(this.tryCount <= this.retryLimit){
-                                    //try again
                                     $.ajax(this);
                                     return;
                                 }
@@ -204,6 +196,35 @@
                     });
                 }
             })();
+            function get_emotion_point(emotion_list){
+                var total_positive = 0;
+                var total_negative = 0;
+                var total_unknown  = 0;
+                var total_emotion  = 0;
+                for(var i in emotion_list){
+                    var emotion = JSON.parse(emotion_list[i]);
+                    //console.debug(i +":key:"+emotion.body.key);
+                    //console.debug(i +":emotion_type:"+emotion.body.emotion_type);
+                    //console.debug(i +":positive:"+emotion.body.positive);
+                    //console.debug(i +":negative:"+emotion.body.negative);
+                    //console.debug(i +":unkown:"+emotion.body.unknown);
+                    //console.debug(i +":text:"+emotion.body.text);
+                    total_positive = total_positive + emotion.body.positive;
+                    total_negative = total_negative + emotion.body.negative;
+                    total_unknown  = total_unknown  + emotion.body.unknown;
+                }
+                var total_text    = emotion_list.length;
+                var total_emotion = total_positive + total_negative + total_unknown;
+                var emotion_point = {
+                    "positive"      : total_positive,
+                    "negative"      : total_negative,
+                    "unknown"       : total_unknown,
+                    "total_text"    : total_text,
+                    "total_emotion" : total_emotion
+                };
+                //console.debug(emotion_point);
+                return emotion_point;
+            }
         </script>
     </body>
 </html>
