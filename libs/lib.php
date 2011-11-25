@@ -11,7 +11,6 @@ function set_cache($k, $v){
 }
 
 function get_cache($k){
-    //return false;//xxx
     $k = md5($k);
     return unserialize(memcache_get(conn_cache(), ENV . $k));
 }

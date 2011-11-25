@@ -153,7 +153,7 @@
                             if(i == (status_list.header['count'] - 1)){
                                 sessionStorage.setItem('emotion_list', emotion_list);
                                 var emotion_point = get_emotion_point(emotion_list);
-                                var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、ゴキゲンを'+emotion_point.positive+'°、フキゲンを'+emotion_point.negative+'n°、よくわからないものを'+emotion_point.unknown+'°、検知しました。';
+                                var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、ゴキゲンを'+emotion_point.positive+'°、フキゲンを'+emotion_point.negative+'°、よくわからないものを'+emotion_point.unknown+'°、検知しました。';
                                 var footer = " " + "<?php echo HASH_TAG;?>" + ' ' + "<?php echo SITE_URL;?>" + ' ';
                                 var link = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + footer);
                                 $('#message').html('<p>' + text + '</p>');
