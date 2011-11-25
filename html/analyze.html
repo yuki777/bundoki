@@ -12,12 +12,7 @@
         <![endif]-->
 
         <!-- Le styles -->
-        <link href="/css/bootstrap.css" rel="stylesheet">
-        <style type="text/css">
-            body {
-                padding-top: 60px;
-            }
-        </style>
+        <link href="/css/gokibun.css" rel="stylesheet">
 
         <!-- Le fav and touch icons -->
         <link rel="shortcut icon" href="/images/favicon.ico">
@@ -47,7 +42,7 @@
         <!-- loading animation jquery plugin -->
     </head>
 
-    <body>
+    <body id="analyze">
         <div class="topbar">
             <div class="fill">
                 <div class="container">
@@ -64,6 +59,27 @@
         <div class="container">
 
             <div class="hero-unit">
+            
+            <style>
+            #analyze #needle{ 
+			-webkit-animation-duration: 0.3s; /*測り終わったら 1.5s にする*/
+			-webkit-animation-timing-function: linear; /*測り終わったら ease にする*/
+			-webkit-animation-iteration-count: infinite; /*再生回数 測り終わったら 1 にする*/
+			-webkit-animation-name: rotation;
+			}
+			@-webkit-keyframes rotation {
+				0%{ -webkit-transform: rotate(0);}
+				100% { -webkit-transform: rotate(360deg);}
+			}
+            </style>
+
+            
+				<div id="bundoki">
+						<div id="needle"><img src="images/needle.png"></div>
+				</div>
+				<span id="bundokiMShadow"><img src="images/bundoki_M_shadow.png"></span>
+				<span id="bundokiMpoint"><img src="images/bundoki_point.png"></span>
+                <div class="hero-unit-inner">
                 <h1>ゴキゲンいかが？</h1>
 
                 <p></p>
@@ -77,6 +93,7 @@
                 <!-- tweetしよう -->
                 <div id="lets_tweet"></div>
 
+            	</div>
             </div>
 
             <!-- ユーザツイートリスト -->
