@@ -17,6 +17,7 @@ function get_cache($k){
 }
 
 function l($params = null){
+    if(! is_writable(LOG_FILE)) return false;
     $debug = debug_backtrace();
     $file = $debug[0]['file'];
     $line = $debug[0]['line'];
