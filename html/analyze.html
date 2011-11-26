@@ -195,7 +195,7 @@
                             if(i == (status_list.header['count'] - 1)){
                                 sessionStorage.setItem('emotion_list', emotion_list);
                                 var emotion_point = get_emotion_point(emotion_list);
-                                var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、ゴキゲンを'+emotion_point.positive+'°、フキゲンを'+emotion_point.negative+'°、よくわからないものを'+emotion_point.unknown+'°、検知しました。';
+                                var text = " @" + "<?php echo $screen_name; ?>" + 'さんの、今日のゴキゲンななめ度合いは、' + emotion_point.summary_point_sign + emotion_point.summary_point+ '°でした。ゴキゲン'+emotion_point.positive+'°、フキゲン'+emotion_point.negative+'°、よくわからないもの'+emotion_point.unknown+'°でした。';
                                 var footer = " " + "<?php echo HASH_TAG;?>" + ' ' + "<?php echo SITE_URL;?>" + ' ';
                                 var link = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text + footer);
                                 $('#message').html('<p>' + text + '</p>');
@@ -205,9 +205,10 @@
                                 setTimeout( function() { 
                                     $("#progressbar").css('display', 'none');
                                     // 分度器停止
+                                    $("#analyze #needle").css({'-webkit-animation-name': emotion_point.webkit_animation_name});
                                     $('#analyze #needle').css('-webkit-animation-duration', '1.5s');
                                     $('#analyze #needle').css('-webkit-animation-timing-function', 'ease');
-                                    $('#analyze #needle').css('-webkit-animation-iteration-count', '1');
+                                    //$('#analyze #needle').css('-webkit-animation-iteration-count', '1');
                                 }, 1000);
                             }
                             i++;
@@ -237,7 +238,6 @@
                 var total_positive = 0;
                 var total_negative = 0;
                 var total_unknown  = 0;
-                var total_emotion  = 0;
                 for(var i in emotion_list){
                     var emotion = JSON.parse(emotion_list[i]);
                     total_positive = total_positive + emotion.body.positive;
@@ -245,18 +245,36 @@
                     total_unknown  = total_unknown  + emotion.body.unknown;
                 }
 
+                // ポジティブ角度
                 total_positive = total_positive * 10;
+                // ネガティブ角度
                 total_negative = total_negative * 10;
+                // ポジネガ不明角度
                 total_unknown  = total_unknown  * 10;
-
+                // 解析対象ツイート数
                 var total_text    = emotion_list.length;
+                // 感情抽出できた数
                 var total_emotion = total_positive + total_negative + total_unknown;
+                // サマリー ("ポジティブ" or "ネガティブ"の大きい方に "よくわからない" を足したもの)
+                if(total_positive >= total_negative){
+                    var summary_point = total_unknown + total_positive;
+                    var summary_point_sign = "+";
+                    var webkit_animation_name = 'p' + summary_point;
+                }else{
+                    var summary_point = total_unknown + total_negative;
+                    var webkit_animation_name = 'm' + summary_point;
+                    var summary_point_sign = "-";
+                }
+
                 var emotion_point = {
-                    "positive"       : total_positive,
-                    "negative"       : total_negative,
-                    "unknown"        : total_unknown,
-                    "total_text"     : total_text,
-                    "total_emotion"  : total_emotion
+                    "positive"              : total_positive,
+                    "negative"              : total_negative,
+                    "unknown"               : total_unknown,
+                    "total_text"            : total_text,
+                    "total_emotion"         : total_emotion,
+                    "summary_point"         : summary_point,
+                    "summary_point_sign"    : summary_point_sign,
+                    "webkit_animation_name" : webkit_animation_name 
                 };
                 return emotion_point;
             }

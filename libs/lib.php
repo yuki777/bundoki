@@ -162,23 +162,23 @@ function analyze_nazki($contents, $status){
     return $list;
 }
 
-function get_emotion_point($emotion_list){
-    $list['total_positive'] = 0;
-    $list['total_negative'] = 0;
-    foreach($emotion_list as $emotion){
-        $total_positive = $emotion['positive'] + $total_positive;
-        $total_negative = $emotion['negative'] + $total_negative;
-        $total_unknown = $emotion['unknown'] + $total_unknown;
-    }
-    $list['total_text'] = count($emotion_list);
-    $list['total_positive'] = $total_positive;
-    $list['total_negative'] = $total_negative;
-    $list['total_unknown'] = $total_unknown;
-    $total_emotion = $total_positive + $total_negative + $total_unknown;
-    $list['total_emotion'] = $total_emotion;
-
-    return $list;
-}
+//function get_emotion_point($emotion_list){
+//    $list['total_positive'] = 0;
+//    $list['total_negative'] = 0;
+//    foreach($emotion_list as $emotion){
+//        $total_positive = $emotion['positive'] + $total_positive;
+//        $total_negative = $emotion['negative'] + $total_negative;
+//        $total_unknown = $emotion['unknown'] + $total_unknown;
+//    }
+//    $list['total_text'] = count($emotion_list);
+//    $list['total_positive'] = $total_positive;
+//    $list['total_negative'] = $total_negative;
+//    $list['total_unknown'] = $total_unknown;
+//    $total_emotion = $total_positive + $total_negative + $total_unknown;
+//    $list['total_emotion'] = $total_emotion;
+//
+//    return $list;
+//}
 
 function get_emotion_type($p, $n)
 {
