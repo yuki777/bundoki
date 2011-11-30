@@ -9,7 +9,8 @@ if($_SERVER['HTTP_HOST'] == 'dev.gokibun.com'){
     die('unkown ENV');
 }
 
-define('LOG_FILE', 'logs/log');
+define('BASE_DIR', dirname(dirname(__FILE__)));
+define('LOG_FILE', BASE_DIR . '/logs/log');
 
 // nazki
 if(is_file('configs/nazki.php')){

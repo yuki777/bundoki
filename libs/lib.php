@@ -16,6 +16,10 @@ function get_cache($k){
 }
 
 function l($params = null){
+    if(! is_writable(LOG_FILE)){
+        touch(LOG_FILE);
+        chmod(LOG_FILE, 0777);
+    }
     if(! is_writable(LOG_FILE)) return false;
     $debug = debug_backtrace();
     $file = $debug[0]['file'];
@@ -46,7 +50,6 @@ function get_status_list($screen_name, $datetime){
     $timeline = get_user_timeline_unofficial($screen_name);
     // get only statuses
     $status_list = get_user_status_list_unofficial($timeline);
-    l($status_list);
 
     if($status_list){
         l('cache NOT hit. get_user_status_list() connect twitter unofficial API.');
@@ -102,16 +105,31 @@ function get_emotion($status){
         return $cache;
     }
 
-    $url = NAZKI_API_URL . "&text=" . urlencode($status);
-    $contents = wget($url);
-    $emotion = analyze_nazki($contents, $status);
+    $emotion = analyze($status);
 
     l("cache NOT hit. get_emotion() connect NAZKI API.");
     set_cache('status.' . $status, $emotion);
     return $emotion;
 }
 
-function analyze_nazki($contents, $status){
+function analyze($status){
+    // nazkiAPIを使う場合
+    $emotion = analyze_nazki($status);
+
+    // nazkiAPIが遅いのでgokibun.com独自ロジックでやってみる場合
+    //$emotion = analyze_gokibun($status);
+
+    return $emotion;
+}
+
+// TODO:
+function analyze_gokibun($status){
+    return $emotion;
+}
+
+function analyze_nazki($status){
+    $contents = wget(NAZKI_API_URL . "&text=" . urlencode($status));
+
     // 感情あり
     $positive_count = 0;
     $negative_count = 0;

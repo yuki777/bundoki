@@ -31,4 +31,4 @@ if($_GET['screen_name']){
     include(get_template('html/analyze.html'));
 }
 
-die('UNKNOWN REQUEST ERROR');
+//die('UNKNOWN REQUEST ERROR');
