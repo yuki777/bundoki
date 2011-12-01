@@ -2502,12 +2502,10 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
 
 
 /*top bundoki animation*/
+#bundoki{ width: 415px; height: 415px; position: absolute; top:50px; left: 30px; background: url(../images/bundoki_M.png) no-repeat; }
+#bundokiMpoint{ position: absolute; top:198px; left: 199px;}
 #bundokiMShadow{ position: absolute; left: 120px; top:450px;}
 
-#top #bundoki{ position: absolute; top:50px; left: 30px;
-	width: 415px;
-	height: 415px;
-	}
 #top #bundoki{ 
   -webkit-animation-duration: 3s;
 /*  -webkit-animation-timing-function: ease-in-out;*/
@@ -2519,18 +2517,22 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   70% {-webkit-transform: rotateY(1500deg);}
   100% {-webkit-transform: rotateY(1440deg);}
 }
-#analyze #bundokiMpoint{ position: absolute; top:247px; left: 229px;}
-#analyze #bundoki{ width: 415px; height: 415px; position: absolute; top:50px; left: 30px; background: url(../images/bundoki_M.png) no-repeat; }
-#analyze #needle{ 
-  -webkit-animation-duration: 0.3s;
+
+
+#top #needle{ 
+  -webkit-animation-duration: 0.2s;
   -webkit-animation-timing-function: linear;
-  -webkit-animation-iteration-count: infinite; /*再生回数*/
-  -webkit-animation-name: rotation;
+  -webkit-animation-iteration-count: infinite; 
+  -webkit-animation-name: yure;
 }
-@-webkit-keyframes rotation {
-  0%{ -webkit-transform: rotate(0);}
-  100% { -webkit-transform: rotate(-360deg);}
+@-webkit-keyframes yure {
+  0%{-webkit-transform: rotate(0);}
+  25% {-webkit-transform: rotate(3deg);}
+  50% {-webkit-transform: rotate(0deg);}
+  75% {-webkit-transform: rotate(-3deg);}
+  100% {-webkit-transform: rotate(0deg);}
 }
+
 @-webkit-keyframes p0   { 100% { -webkit-transform: rotate(0deg);}}
 @-webkit-keyframes p10  { 100% { -webkit-transform: rotate(10deg);}}
 @-webkit-keyframes p20  { 100% { -webkit-transform: rotate(20deg);}}
