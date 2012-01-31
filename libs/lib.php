@@ -67,7 +67,7 @@ function get_user_timeline_unofficial($screen_name){
         l('cache hit. get_user_timeline_unofficial() return cache.');
         return $cache;
     }
-    $url = "https://api.twitter.com/1/statuses/user_timeline.json?include_entities=true&include_rts=true&count=20&screen_name=" . $screen_name;
+    $url = "https://api.twitter.com/1/statuses/user_timeline.json?include_entities=true&include_rts=true&count=20&screen_name=" . $screen_name; 
     $content = wget($url);
     $content = json_decode($content);
     $timeline = make_user_timeline_unofficial($content);
@@ -114,16 +114,52 @@ function get_emotion($status){
 
 function analyze($status){
     // nazkiAPIを使う場合
-    $emotion = analyze_nazki($status);
+    //$emotion = analyze_nazki($status);
 
     // nazkiAPIが遅いのでgokibun.com独自ロジックでやってみる場合
-    //$emotion = analyze_gokibun($status);
+    $emotion = analyze_gokibun($status);
 
     return $emotion;
 }
 
 // TODO:
 function analyze_gokibun($status){
+
+    mb_internal_encoding("UTF-8");
+
+    // ポジティブ辞書の単語が、1ツイートにいくつ含まれているか
+    $positive_dict = file_get_contents('dict/positive_dict');
+    $positive_pattern = "/" . rtrim(str_replace("\n", "|", $positive_dict), "|") . "/u";
+    $positive_count = preg_match_all($positive_pattern, $status, $match);
+
+    // ネガティブ辞書の単語が、1ツイートにいくつ含まれているか
+    $negative_dict = file_get_contents('dict/negative_dict');
+    $negative_pattern = "/" . rtrim(str_replace("\n", "|", $negative_dict), "|") . "/u";
+    $negative_count = preg_match_all($negative_pattern, $status, $match);
+
+    // ポジもネガもないならunknown
+    $unknown_count = 0;
+    if(! $positive_count && ! $negative_count){
+        $emotion_type = 'unknown';
+        $unknown_count = 1;
+    }elseif($positive_count >= $negative_count){
+        $emotion_type = 'positive';
+    }elseif($positive_count < $negative_count){
+        $emotion_type = 'negative';
+    }else{
+        $log = "ERROR : analyze count error";
+        error_log(date('Y-m-d H:i:s')." ".__FILE__." ".__METHOD__." ".__LINE__." ".var_export($log,true)."\n", 3, '/home/mazda/log');
+        exit;
+    }
+
+    $emotion = array (
+        'emotion_type' => $emotion_type,
+        'positive'     => $positive_count,
+        'negative'     => $negative_count,
+        'unknown'      => $unknown_count,
+        'text'         => $status,
+        'key'          => md5($status),
+    );
     return $emotion;
 }
 

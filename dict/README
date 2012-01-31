@@ -1,0 +1,14 @@
+# DL
+wget http://cl.naist.jp/~inui/research/EM/wago.121808.pn.gz
+
+# 解凍
+gunzip wago.121808.pn.gz
+
+# 辞書自体にスペースがあるので、スペースでawkすると辞書が千切れるがまぁ良しとする。
+# ネガティブ辞書生成
+cat wago.121808.pn|grep "ネガ"|awk -F " " '{print $2}'|grep -v " "|sort|uniq > negative_dict
+# ポジティブ辞書生成
+cat wago.121808.pn|grep "ポジ"|awk -F " " '{print $2}'|grep -v " "|sort|uniq > positive_dict
+
+
+# なぜか一行目が空行？になるので削除しておく
