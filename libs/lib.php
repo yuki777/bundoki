@@ -39,21 +39,21 @@ function v($params = null){
     return l($params);
 }
 
-function get_status_list($screen_name, $datetime){
-    $cache = get_cache('status_list.' . $datetime . '.' . $screen_name);
+function get_status_list($screen_name, $date){
+    $cache = get_cache('status_list.' . $date . '.' . $screen_name);
     if($cache){
         l('cache hit. get_user_status_list() return cache.');
         return $cache;
     }
 
-    // get statuses, datetime, ,images,,, etc
+    // get statuses, date, ,images,,, etc
     $timeline = get_user_timeline_unofficial($screen_name);
     // get only statuses
     $status_list = get_user_status_list_unofficial($timeline);
 
     if($status_list){
         l('cache NOT hit. get_user_status_list() connect twitter unofficial API.');
-        set_cache('status_list.' . $datetime . '.' . $screen_name, $status_list);
+        set_cache('status_list.' . $date . '.' . $screen_name, $status_list);
     }
     return $status_list;
 }

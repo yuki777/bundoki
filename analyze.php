@@ -10,16 +10,16 @@ if(! $_REQUEST['screen_name']){
 
 // POSTならGETへ
 if($_POST['screen_name']){
-    if(! $datetime) $datetime = date('YmdHis');
+    if(! $date) $date = date('Ymd');
 
     // nyarico.comはmod_rewriteが効かないっぽいのでquery stringでリダイレクト。
     if($_SERVER['HTTP_HOST'] == 'gokibun.nyarico.com'
     //|| $_SERVER['HTTP_HOST'] == 'dev.gokibun.com'
     ){
-        header('Location: ' . SITE_URL . '/analyze.php?screen_name=' . $_REQUEST['screen_name'] . '&datetime=' . $datetime);
+        header('Location: ' . SITE_URL . '/analyze.php?screen_name=' . $_REQUEST['screen_name']);
         exit;
     }else{
-        header('Location: ' . SITE_URL . '/analyze/' . $_REQUEST['screen_name'] . '/' . $datetime . '/');
+        header('Location: ' . SITE_URL . '/analyze/' . $_REQUEST['screen_name'] . '/');
         exit;
     }
 }
@@ -27,7 +27,7 @@ if($_POST['screen_name']){
 // GETならHTML表示
 if($_GET['screen_name']){
     $screen_name = $_GET['screen_name'];
-    $datetime = date('YmdHis');
+    $date = date('Ymd');
     include(get_template('html/analyze.html'));
 }
 

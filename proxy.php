@@ -5,7 +5,7 @@ require_once('libs/lib.php');
 $mode = $_GET['mode'];
 
 if($mode == 'get_status_list'){
-    $status_list = get_status_list($_GET['screen_name'], $_GET['datetime']);
+    $status_list = get_status_list($_GET['screen_name'], $_GET['date']);
 
     $status = 500;
     if($status_list) $status = 200;

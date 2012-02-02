@@ -11,10 +11,12 @@ php_value date.timezone Asia/Tokyo
 RewriteEngine On
 # analyze
 RewriteRule ^analyze/([0-9a-zA-Z_-]+)/$                             /analyze.php?screen_name=$1               [L]
-RewriteRule ^analyze/([0-9a-zA-Z_-]+)/([0-9]{14})/$                 /analyze.php?screen_name=$1&date=$2       [L]
+#RewriteRule ^analyze/([0-9a-zA-Z_-]+)/([0-9]{14})/$                 /analyze.php?screen_name=$1&date=$2       [L]
+RewriteRule ^analyze/([0-9a-zA-Z_-]+)/([0-9]{8})/$                 /analyze.php?screen_name=$1&date=$2       [L]
 
 # proxy
-RewriteRule ^proxy/mode/([^/]+)/screen_name/([^/]+)/datetime/([^/]+)/?$ /proxy.php?mode=$1&screen_name=$2&datetime=$3 [L]
+#RewriteRule ^proxy/mode/([^/]+)/screen_name/([^/]+)/datetime/([^/]+)/?$ /proxy.php?mode=$1&screen_name=$2&datetime=$3 [L]
+RewriteRule ^proxy/mode/([^/]+)/screen_name/([^/]+)/date/([^/]+)/?$ /proxy.php?mode=$1&screen_name=$2&date=$3 [L]
 RewriteRule ^proxy/mode/([^/]+)/screen_name/([^/]+)/?$                  /proxy.php?mode=$1&screen_name=$2             [L]
 RewriteRule ^proxy/mode/([^/]+)/status/?$                               /proxy.php?mode=$1                            [L]
 

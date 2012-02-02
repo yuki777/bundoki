@@ -122,7 +122,7 @@
             });
 
             function get_status_list(){
-                var url = '/proxy/mode/get_status_list/screen_name/' + "<?php echo $screen_name;?>" + '/datetime/' + "<?php echo $datetime;?>" + '/';
+                var url = '/proxy/mode/get_status_list/screen_name/' + "<?php echo $screen_name;?>" + '/';
                 $.ajax({
                     url : url,
                     type : 'get',
