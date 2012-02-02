@@ -122,19 +122,49 @@ function analyze($status){
     return $emotion;
 }
 
-// TODO:
+function get_positive_regex_pattern(){
+    $date = date('Ymd');
+
+    $cache = get_cache('positive_regex.' . $date);
+    if($cache){
+        l("cache HIT : positive_regex_pattern");
+        return $cache;
+    }
+
+    $dict = file_get_contents('dict/positive_dict');
+    $pattern = "/" . rtrim(str_replace("\n", "|", $dict), "|") . "/u";
+
+    set_cache('positive_regex.' . $date, $pattern);
+
+    return $pattern;
+}
+function get_negative_regex_pattern(){
+    $date = date('Ymd');
+
+    $cache = get_cache('negative_regex.' . $date);
+    if($cache){
+        l("cache HIT : negative_regex_pattern");
+        return $cache;
+    }
+
+    $dict = file_get_contents('dict/negative_dict');
+    $pattern = "/" . rtrim(str_replace("\n", "|", $dict), "|") . "/u";
+
+    set_cache('negative_regex.' . $date, $pattern);
+
+    return $pattern;
+}
+
 function analyze_gokibun($status){
 
     mb_internal_encoding("UTF-8");
 
     // ポジティブ辞書の単語が、1ツイートにいくつ含まれているか
-    $positive_dict = file_get_contents('dict/positive_dict');
-    $positive_pattern = "/" . rtrim(str_replace("\n", "|", $positive_dict), "|") . "/u";
+    $positive_pattern = get_positive_regex_pattern();
     $positive_count = preg_match_all($positive_pattern, $status, $match);
 
     // ネガティブ辞書の単語が、1ツイートにいくつ含まれているか
-    $negative_dict = file_get_contents('dict/negative_dict');
-    $negative_pattern = "/" . rtrim(str_replace("\n", "|", $negative_dict), "|") . "/u";
+    $negative_pattern = get_negative_regex_pattern();
     $negative_count = preg_match_all($negative_pattern, $status, $match);
 
     // ポジもネガもないならunknown
